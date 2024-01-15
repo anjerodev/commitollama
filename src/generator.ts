@@ -1,4 +1,3 @@
-import { codeBlock, oneLine } from "common-tags"
 import { LlmParams, OllamaToken, Options } from "./types/llm"
 import { config } from "./config"
 
@@ -83,22 +82,15 @@ export async function* ollamaTokenGenerator(
 export async function getSummary(diff: string): Promise<string> {
 	let summary = ""
 
-	const prompt = codeBlock`
-	${oneLine`
+	const prompt = `
 	You are an expert developer specialist in creating commits. 
 	Provide a super concise one sentence overall changes summary of the 
 	following \`git diff\` output following strictly the next rules:
-	`}
-	${oneLine`
-	- Do not use any code snippets, imports, file routes or bullets points.`}
-	${oneLine`
-	- Do not mention the route of file that has been change.`}
-	${oneLine`
-	- Simply describe the MAIN GOAL of the changes.`}
-	${oneLine`
-	- Output directly the summary in plain text.`}
-	${oneLine`
-	- Here is the \`git diff\` output: ${diff}`}
+	- Do not use any code snippets, imports, file routes or bullets points.
+	- Do not mention the route of file that has been change.
+	- Simply describe the MAIN GOAL of the changes.
+	- Output directly the summary in plain text.
+	- Here is the \`git diff\` output: ${diff}
 	`
 
 	const inferenceConfig = config.inference
@@ -124,24 +116,17 @@ export async function getSummary(diff: string): Promise<string> {
 export async function getCommitMessage(summaries: string[]) {
 	let commit = ""
 
-	const prompt = codeBlock`
-	${oneLine`
+	const prompt =`
 	Your only goal is to retrieve a single commit message. 
 	Based on the following changes, combine them in ONE SINGLE 
 	commit message retrieving the global idea, following strictly the next rules:
-	`}
-	${oneLine`
 	- Always use the next format: \`{type}: {commit_message}\` where
 	 \`{type}\` is one of \`feat\`, \`fix\`, \`docs\`, \`style\`, 
-	 \`refactor\`, \`test\`, \`chore\`, \`revert\`.`}
-	${oneLine`
-	- Output directly only one commit message in plain text.`}
-	${oneLine`
-	- Be as concise as possible. 40 characters max.`}
-	${oneLine`
-	- Do not add any issues numeration nor explain your output.`}
-	${oneLine`
-	- Here are the summaries changes: ${summaries.join(", ")}`}
+	 \`refactor\`, \`test\`, \`chore\`, \`revert\`.
+	- Output directly only one commit message in plain text.
+	- Be as concise as possible. 40 characters max.
+	- Do not add any issues numeration nor explain your output.
+	- Here are the summaries changes: ${summaries.join(", ")}
 	`
 
 	const inferenceConfig = config.inference
