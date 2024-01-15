@@ -1,6 +1,6 @@
 # Commitollama 🦙
 
-A Github Copilot commits generator free alternative, that run on your device using [ollama](https://ollama.ai/).
+A Github Copilot commits generator free alternative, that run on your device using [ollama][1].
 
 ## Features
 
@@ -9,9 +9,13 @@ A Github Copilot commits generator free alternative, that run on your device usi
 - Different models available.
 - No Internet connection needed.
 
+## Demo
+
+![vscode-commitollama-demo][2]
+
 ## Requirements
 
-- Install [Ollama](https://ollama.ai) on your local machine.
+- Install [Ollama][1] on your local machine.
 - Install the model to use: `ollama pull [model_name]`, recommended to use `mistral` or `codellama`. It works better with `mistral`.
 - Make sure ollama is running. Only opening the app should be enough, if not, run in your terminal: `ollama run [model_name]` or `ollama serve`.
 
@@ -36,3 +40,6 @@ Sometimes can generate quite long commits, but it give you an idea of what the c
 ### 1.0.0
 
 Initial release of commitollama
+
+[1]: https://ollama.ai/
+[2]: https://raw.githubusercontent.com/jepricreations/commitollama/main/commitollama-demo.gif
