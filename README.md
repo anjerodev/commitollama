@@ -16,20 +16,45 @@ A Github Copilot commits generator free alternative, that run on your device usi
 ## Requirements
 
 - Install [Ollama][1] on your local machine.
-- Install the model to use: `ollama pull [model_name]`, recommended to use `mistral` or `codellama`. It works better with `mistral`.
-- Make sure ollama is running. Only opening the app should be enough, if not, run in your terminal: `ollama run [model_name]` or `ollama serve`.
+- Install the model to use: `ollama pull [model_name]`, recommended to use `mistral` or `codellama`. In the tests I did, it works better with `mistral`.
+- Make sure ollama is running, you can do it by visiting http://127.0.0.1:11434/ in your web browser (The port number might be different for you). If not, only opening the app should be enough, or run in your terminal: `ollama serve`.
 
 ## Configuration
 
-- Endpoint: Ollama usually uses port 11434. It is the value that will be used if empty.
-
-- You can select the model from the plugin configuration.
+- Model: You can select the model from the plugin configuration.
 
   `mistral` - default
 
   `codellama`
 
   `custom` - It allow you to write down the model name that you have set on ollama.
+
+- Use Emojis: It allow you to enable or disable the use of emojis in commit messages.
+
+- Custom Emojis: It allow you to write down the emojis you want to use in the next template object in the VSCode config.json.
+
+  ```json
+   "commitollama.commitEmojis": {
+    "feat": "✨",
+    "fix": "🐛",
+    "docs": "📝",
+    "style": "💎",
+    "refactor": "♻️",
+    "test": "🧪",
+    "chore": "📦",
+    "revert": "⏪"
+  }
+  ```
+
+- Custom Endpoint: Ollama usually uses port 11434. It is the value that will be used if empty.
+
+- Custom Summary Prompt: The prompt that will be used to generate the summary of all git diff.
+
+- Custom Commit Prompt: The prompt that will be used to generate the commit message.
+
+- Custom Summary Temperature: The temperature that will be used to generate the summary of all git diff.
+
+- Custom Commit Temperature: The temperature that will be used to generate the commit message.
 
 ## Known Issues
 

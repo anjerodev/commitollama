@@ -25,3 +25,14 @@ export type OllamaToken = {
 	response: string
 	done: boolean
 }
+
+export type EmojisMap = {
+	feat: string
+	fix: string
+	docs: string
+	style: string
+	refactor: string
+	test: string
+	chore: string
+	revert: string
+}

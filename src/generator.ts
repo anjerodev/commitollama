@@ -1,5 +1,5 @@
 import { LlmParams, OllamaToken, Options } from "./types/llm"
-import { config } from "./config"
+import { config, defaultConfig } from "./config"
 
 async function* lineGenerator(url: string, params: Partial<Options>) {
 	if (!params?.prompt) {
@@ -13,8 +13,8 @@ async function* lineGenerator(url: string, params: Partial<Options>) {
 		model: params.model ?? inferenceConfig.modelName,
 		prompt: params.prompt,
 		options: {
-			num_predict: params?.num_predict ?? 100,
-			temperature: params?.temperature ?? 0.8,
+			num_predict: params?.num_predict ?? defaultConfig.num_predict,
+			temperature: params?.temperature ?? defaultConfig.temperature,
 		},
 	}
 
@@ -28,7 +28,9 @@ async function* lineGenerator(url: string, params: Partial<Options>) {
 	})
 
 	if (!res.ok || !res.body) {
-		throw Error("Unable to connect to backend")
+		throw Error(
+			"Unable to connect to ollama. Please, check that ollama is running.",
+		)
 	}
 
 	const stream = res.body.getReader()
@@ -80,27 +82,25 @@ export async function* ollamaTokenGenerator(
 }
 
 export async function getSummary(diff: string): Promise<string> {
+	const { summaryPrompt, endpoint, summaryTemperature } = config.inference
 	let summary = ""
 
-	const prompt = `
-	You are an expert developer specialist in creating commits. 
+	const defaultSummaryPrompt = `You are an expert developer specialist in creating commits. 
 	Provide a super concise one sentence overall changes summary of the 
 	following \`git diff\` output following strictly the next rules:
 	- Do not use any code snippets, imports, file routes or bullets points.
 	- Do not mention the route of file that has been change.
 	- Simply describe the MAIN GOAL of the changes.
-	- Output directly the summary in plain text.
-	- Here is the \`git diff\` output: ${diff}
-	`
+	- Output directly the summary in plain text.`
 
-	const inferenceConfig = config.inference
+	const prompt = `${
+		summaryPrompt || defaultSummaryPrompt
+	}\nHere is the \`git diff\` output: ${diff}`
 
-	for await (const token of ollamaTokenGenerator(
-		`${inferenceConfig.endpoint}/api/generate`,
-		{
-			prompt,
-		},
-	)) {
+	for await (const token of ollamaTokenGenerator(`${endpoint}/api/generate`, {
+		prompt,
+		temperature: summaryTemperature,
+	})) {
 		summary += token.response
 	}
 
@@ -114,35 +114,43 @@ export async function getSummary(diff: string): Promise<string> {
 }
 
 export async function getCommitMessage(summaries: string[]) {
+	const { commitPrompt, endpoint, commitTemperature, useEmojis, commitEmojis } =
+		config.inference
 	let commit = ""
 
-	const prompt =`
-	Your only goal is to retrieve a single commit message. 
+	const defaultCommitPrompt = `Your only goal is to retrieve a single commit message. 
 	Based on the following changes, combine them in ONE SINGLE 
 	commit message retrieving the global idea, following strictly the next rules:
 	- Always use the next format: \`{type}: {commit_message}\` where
-	 \`{type}\` is one of \`feat\`, \`fix\`, \`docs\`, \`style\`, 
-	 \`refactor\`, \`test\`, \`chore\`, \`revert\`.
+	\`{type}\` is one of \`feat\`, \`fix\`, \`docs\`, \`style\`, 
+	\`refactor\`, \`test\`, \`chore\`, \`revert\`.
 	- Output directly only one commit message in plain text.
 	- Be as concise as possible. 40 characters max.
-	- Do not add any issues numeration nor explain your output.
-	- Here are the summaries changes: ${summaries.join(", ")}
+	- Do not add any issues numeration nor explain your output.`
+
+	const prompt = `
+	${commitPrompt || defaultCommitPrompt}
+	\nHere are the summaries changes: ${summaries.join(", ")}
 	`
 
-	const inferenceConfig = config.inference
-
-	for await (const token of ollamaTokenGenerator(
-		`${inferenceConfig.endpoint}/api/generate`,
-		{
-			prompt,
-			num_predict: 46,
-			temperature: 0.2,
-		},
-	)) {
+	for await (const token of ollamaTokenGenerator(`${endpoint}/api/generate`, {
+		prompt,
+		num_predict: 46,
+		temperature: commitTemperature,
+	})) {
 		commit += token.response
 	}
 
-	commit = commit.replaceAll('"', "").replaceAll("`", "").trim()
+	commit = commit.replace(/["`]/g, "")
 
-	return commit
+	// Add the emoji to the commit if activated
+	if (useEmojis) {
+		const emojisMap = JSON.parse(JSON.stringify(commitEmojis))
+		for (const [type, emoji] of Object.entries(emojisMap)) {
+			const regex = new RegExp(`\\b${type}\\b`, "g")
+			commit = commit.replace(regex, `${type} ${emoji}`)
+		}
+	}
+
+	return commit.trim()
 }

@@ -6,5 +6,8 @@
 		"out": true
 	},
 	"typescript.tsc.autoDetect": "off",
-	"cSpell.words": ["ollama"]
+	"cSpell.words": [
+		"commitollama",
+		"ollama"
+	]
 }
