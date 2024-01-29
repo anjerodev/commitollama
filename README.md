@@ -62,9 +62,17 @@ Sometimes can generate quite long commits, but it give you an idea of what the c
 
 ## Release Notes
 
+### 1.3.0
+
+Added support for emojis.
+
+### 1.2.0
+
+Added support for custom prompts and llm temperature.
+
 ### 1.0.0
 
-Initial release of commitollama
+Initial release of commitollama.
 
 [1]: https://ollama.ai/
 [2]: https://raw.githubusercontent.com/jepricreations/commitollama/main/commitollama-demo.gif
