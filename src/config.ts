@@ -1,4 +1,4 @@
-import vscode from "vscode"
+import { workspace } from "vscode"
 import { EmojisMap, Model } from "./types/llm"
 
 export const defaultConfig = {
@@ -60,7 +60,7 @@ class Config {
 	}
 
 	get #config() {
-		return vscode.workspace.getConfiguration("commitollama")
+		return workspace.getConfiguration("commitollama")
 	}
 }
 
