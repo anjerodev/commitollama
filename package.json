@@ -125,10 +125,10 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run esbuild-base --minify",
+    "vscode:prepublish": "npm run esbuild-base --minify",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
-    "build": "pnpm run -S esbuild-base -- --sourcemap",
-    "watch": "pnpm run -S esbuild-base -- --sourcemap --watch",
+    "build": "npm run -S esbuild-base -- --sourcemap",
+    "watch": "npm run -S esbuild-base -- --sourcemap --watch",
     "pretest": "pnpm run build && pnpm run lint",
     "lint": "pnpm dlx @biomejs/biome lint src",
     "test": "vscode-test"
