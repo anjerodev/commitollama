@@ -48,7 +48,7 @@ async function createCommitMessage(repo: Repository) {
 
 			const ind = await repo.diffIndexWithHEAD()
 			const callbacks = ind.map((change) =>
-				getSummaryUriDiff(repo, change.uri.path),
+				getSummaryUriDiff(repo, change.uri.fsPath),
 			)
 			const summaries = await Promise.all(callbacks)
 			const commitMessage = await getCommitMessage(summaries)
