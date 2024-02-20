@@ -45,14 +45,19 @@ async function createCommitMessage(repo: Repository) {
 		},
 		async () => {
 			vscode.commands.executeCommand("workbench.view.scm")
+			try {
+				const ind = await repo.diffIndexWithHEAD()
+				const callbacks = ind.map((change) =>
+					getSummaryUriDiff(repo, change.uri.fsPath),
+				)
+				const summaries = await Promise.all(callbacks)
+				const commitMessage = await getCommitMessage(summaries)
+				repo.inputBox.value = commitMessage
 
-			const ind = await repo.diffIndexWithHEAD()
-			const callbacks = ind.map((change) =>
-				getSummaryUriDiff(repo, change.uri.fsPath),
-			)
-			const summaries = await Promise.all(callbacks)
-			const commitMessage = await getCommitMessage(summaries)
-			repo.inputBox.value = commitMessage
+				// biome-ignore lint/suspicious/noExplicitAny: no-explicit-any for error handling
+			} catch (error: any) {
+				vscode.window.showErrorMessage(error.message)
+			}
 		},
 	)
 }
