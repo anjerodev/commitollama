@@ -39,7 +39,7 @@ export async function getSummary(diff: string): Promise<string> {
 			.map((v) => v.trim())
 			.join("\n")
 	} catch (error) {
-		throw Error(
+		throw new Error(
 			"Unable to connect to ollama. Please, check that ollama is running.",
 		)
 	}
@@ -98,6 +98,6 @@ export async function getCommitMessage(summaries: string[]) {
 
 		return commit.trim()
 	} catch (error) {
-		throw Error("Unable to generate commit.")
+		throw new Error("Unable to generate commit.")
 	}
 }

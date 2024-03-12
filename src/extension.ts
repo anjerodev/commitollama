@@ -47,6 +47,13 @@ async function createCommitMessage(repo: Repository) {
 			vscode.commands.executeCommand("workbench.view.scm")
 			try {
 				const ind = await repo.diffIndexWithHEAD()
+
+				if (ind.length === 0) {
+					throw new Error(
+						"No changes to commit. Please stage your changes first.",
+					)
+				}
+
 				const callbacks = ind.map((change) =>
 					getSummaryUriDiff(repo, change.uri.fsPath),
 				)
