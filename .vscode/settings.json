@@ -6,8 +6,6 @@
 		"out": true
 	},
 	"typescript.tsc.autoDetect": "off",
-	"cSpell.words": [
-		"commitollama",
-		"ollama"
-	]
+	"cSpell.words": ["commitollama", "ollama"],
+	"editor.defaultFormatter": "biomejs.biome"
 }
