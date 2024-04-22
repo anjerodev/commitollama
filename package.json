@@ -1,149 +1,141 @@
 {
-  "name": "commitollama",
-  "displayName": "commitollama",
-  "description": "AI Commits with ollama",
-  "publisher": "Commitollama",
-  "version": "1.5.1",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/JepriCreations/commitollama.git"
-  },
-  "engines": {
-    "vscode": "^1.85.0"
-  },
-  "categories": [
-    "Machine Learning",
-    "Programming Languages"
-  ],
-  "icon": "icon.jpg",
-  "license": "MIT",
-  "keywords": [
-    "code",
-    "assistant",
-    "ai",
-    "llm",
-    "commits",
-    "ollama"
-  ],
-  "main": "./dist/extension.js",
-  "activationEvents": [],
-  "contributes": {
-    "commands": [
-      {
-        "command": "commitollama.createCommit",
-        "title": "Run Commitollama",
-        "icon": "$(sparkle)"
-      }
-    ],
-    "menus": {
-      "scm/title": [
-        {
-          "when": "scmProvider == git",
-          "command": "commitollama.createCommit",
-          "group": "navigation"
-        }
-      ]
-    },
-    "configuration": [
-      {
-        "title": "Commitollama",
-        "properties": {
-          "commitollama.model": {
-            "type": "string",
-            "enum": [
-              "codellama",
-              "mistral",
-              "custom"
-            ],
-            "default": "mistral",
-            "description": "Model to use for the commit creations.",
-            "order": 0
-          },
-          "commitollama.useEmojis": {
-            "type": "boolean",
-            "default": false,
-            "description": "Enable or disable the use of emojis in commit messages.",
-            "order": 1
-          },
-          "commitollama.commitEmojis": {
-            "type": "object",
-            "default": {
-              "feat": "✨",
-              "fix": "🐛",
-              "docs": "📝",
-              "style": "💎",
-              "refactor": "♻️",
-              "test": "🧪",
-              "chore": "📦",
-              "revert": "⏪"
-            },
-            "description": "Map commit types to emojis. Only used if emojis are enabled.",
-            "order": 2
-          },
-          "commitollama.custom.endpoint": {
-            "type": "string",
-            "default": "",
-            "description": "Ollama Server Endpoint. Empty for default ollama endpoint.",
-            "order": 3
-          },
-          "commitollama.custom.model": {
-            "type": "string",
-            "default": "",
-            "description": "You can use a non-listed model always that you have it pulled from ollama. Note: It only will be selected when model is set to \"custom\".",
-            "order": 4
-          },
-          "commitollama.custom.summaryPrompt": {
-            "type": "string",
-            "default": "",
-            "description": "Custom prompt for summarize the git diff.",
-            "order": 5
-          },
-          "commitollama.custom.summaryTemperature": {
-            "type": "number",
-            "default": 0.8,
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Custom temperature for summarize the git diff. (greater = more creative)",
-            "order": 6
-          },
-          "commitollama.custom.commitPrompt": {
-            "type": "string",
-            "default": "",
-            "description": "Custom prompt for commit message.",
-            "order": 7
-          },
-          "commitollama.custom.commitTemperature": {
-            "type": "number",
-            "default": 0.2,
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Custom temperature for commit message. (greater = more creative)",
-            "order": 8
-          }
-        }
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run esbuild-base --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
-    "build": "npm run -S esbuild-base -- --sourcemap",
-    "watch": "npm run -S esbuild-base -- --sourcemap --watch",
-    "pretest": "npm run build && npm run lint",
-    "lint": "npm dlx @biomejs/biome lint src",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.5.3",
-    "@types/mocha": "10.0.6",
-    "@types/node": "20.11.10",
-    "@types/vscode": "1.85.0",
-    "@vscode/test-cli": "0.0.4",
-    "@vscode/test-electron": "2.3.9",
-    "esbuild": "0.20.0",
-    "typescript": "5.3.3"
-  },
-  "dependencies": {
-    "ollama": "^0.4.6"
-  }
+	"name": "commitollama",
+	"displayName": "commitollama",
+	"description": "AI Commits with ollama",
+	"publisher": "Commitollama",
+	"version": "1.5.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/JepriCreations/commitollama.git"
+	},
+	"engines": {
+		"vscode": "^1.85.0"
+	},
+	"categories": ["Machine Learning", "Programming Languages"],
+	"icon": "icon.jpg",
+	"license": "MIT",
+	"keywords": ["code", "assistant", "ai", "llm", "commits", "ollama"],
+	"main": "./dist/extension.js",
+	"activationEvents": [],
+	"contributes": {
+		"commands": [
+			{
+				"command": "commitollama.createCommit",
+				"title": "Run Commitollama",
+				"icon": "$(sparkle)"
+			}
+		],
+		"menus": {
+			"scm/title": [
+				{
+					"when": "scmProvider == git",
+					"command": "commitollama.createCommit",
+					"group": "navigation"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "Commitollama",
+				"properties": {
+					"commitollama.model": {
+						"type": "string",
+						"enum": [
+							"llama3:latest",
+							"codegemma:latest",
+							"codellama:7b-instruct",
+							"mistral:latest",
+							"custom"
+						],
+						"default": "llama3:latest",
+						"description": "Model to use for the commit creations.",
+						"order": 0
+					},
+					"commitollama.useEmojis": {
+						"type": "boolean",
+						"default": false,
+						"description": "Enable or disable the use of emojis in commit messages.",
+						"order": 1
+					},
+					"commitollama.commitEmojis": {
+						"type": "object",
+						"default": {
+							"feat": "✨",
+							"fix": "🐛",
+							"docs": "📝",
+							"style": "💎",
+							"refactor": "♻️",
+							"test": "🧪",
+							"chore": "📦",
+							"revert": "⏪"
+						},
+						"description": "Map commit types to emojis. Only used if emojis are enabled.",
+						"order": 2
+					},
+					"commitollama.custom.endpoint": {
+						"type": "string",
+						"default": "",
+						"description": "Ollama Server Endpoint. Empty for default ollama endpoint.",
+						"order": 3
+					},
+					"commitollama.custom.model": {
+						"type": "string",
+						"default": "",
+						"description": "You can use a non-listed model always that you have it pulled from ollama. Note: It only will be selected when model is set to \"custom\".",
+						"order": 4
+					},
+					"commitollama.custom.summaryPrompt": {
+						"type": "string",
+						"default": "",
+						"description": "Custom prompt for summarize the git diff.",
+						"order": 5
+					},
+					"commitollama.custom.summaryTemperature": {
+						"type": "number",
+						"default": 0.8,
+						"minimum": 0,
+						"maximum": 1,
+						"description": "Custom temperature for summarize the git diff. (greater = more creative)",
+						"order": 6
+					},
+					"commitollama.custom.commitPrompt": {
+						"type": "string",
+						"default": "",
+						"description": "Custom prompt for commit message.",
+						"order": 7
+					},
+					"commitollama.custom.commitTemperature": {
+						"type": "number",
+						"default": 0.2,
+						"minimum": 0,
+						"maximum": 1,
+						"description": "Custom temperature for commit message. (greater = more creative)",
+						"order": 8
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run esbuild-base --minify",
+		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+		"build": "npm run -S esbuild-base -- --sourcemap",
+		"watch": "npm run -S esbuild-base -- --sourcemap --watch",
+		"pretest": "npm run build && npm run lint",
+		"lint": "npm dlx @biomejs/biome lint src",
+		"test": "vscode-test"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.7.0",
+		"@types/mocha": "10.0.6",
+		"@types/node": "20.12.7",
+		"@types/vscode": "1.88.0",
+		"@vscode/test-cli": "0.0.9",
+		"@vscode/test-electron": "2.3.9",
+		"esbuild": "0.20.2",
+		"typescript": "5.4.5"
+	},
+	"dependencies": {
+		"ollama": "0.5.0"
+	}
 }
