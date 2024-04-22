@@ -3,7 +3,7 @@
 	"displayName": "commitollama",
 	"description": "AI Commits with ollama",
 	"publisher": "Commitollama",
-	"version": "1.5.1",
+	"version": "1.6.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/JepriCreations/commitollama.git"
@@ -11,10 +11,20 @@
 	"engines": {
 		"vscode": "^1.88.0"
 	},
-	"categories": ["Machine Learning", "Programming Languages"],
+	"categories": [
+		"Machine Learning",
+		"Programming Languages"
+	],
 	"icon": "icon.jpg",
 	"license": "MIT",
-	"keywords": ["code", "assistant", "ai", "llm", "commits", "ollama"],
+	"keywords": [
+		"code",
+		"assistant",
+		"ai",
+		"llm",
+		"commits",
+		"ollama"
+	],
 	"main": "./dist/extension.js",
 	"activationEvents": [],
 	"contributes": {
