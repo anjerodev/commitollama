@@ -1,6 +1,8 @@
 export enum Model {
+	Llama3 = "llama3:latest",
+	Codegemma = "codegemma:latest",
 	Codellama = "codellama",
-	Mistral = "mistral",
+	Mistral = "mistral:latest",
 }
 
 export type EmojisMap = {
