@@ -1,5 +1,5 @@
 import * as vscode from "vscode"
-import { GitExtension, Repository } from "./types/git"
+import type { GitExtension, Repository } from "./types/git"
 import { getCommitMessage, getSummary } from "./generator"
 
 export function activate(context: vscode.ExtensionContext) {
@@ -58,12 +58,15 @@ async function createCommitMessage(repo: Repository) {
 					getSummaryUriDiff(repo, change.uri.fsPath),
 				)
 				const summaries = await Promise.all(callbacks)
+
 				const commitMessage = await getCommitMessage(summaries)
 				repo.inputBox.value = commitMessage
 
 				// biome-ignore lint/suspicious/noExplicitAny: no-explicit-any for error handling
 			} catch (error: any) {
-				vscode.window.showErrorMessage(error.message)
+				if (error?.message) {
+					vscode.window.showErrorMessage(error.message)
+				}
 			}
 		},
 	)

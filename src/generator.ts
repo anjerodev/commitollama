@@ -1,5 +1,6 @@
 import { config } from "./config"
 import { Ollama } from "ollama"
+import * as vscode from "vscode"
 
 export async function getSummary(diff: string): Promise<string> {
 	const { summaryPrompt, endpoint, summaryTemperature, modelName } =
@@ -38,7 +39,26 @@ export async function getSummary(diff: string): Promise<string> {
 			.split("\n")
 			.map((v) => v.trim())
 			.join("\n")
-	} catch (error) {
+
+		// biome-ignore lint/suspicious/noExplicitAny: no-explicit-any for error handling
+	} catch (error: any) {
+		if (error?.status_code === 404) {
+			const errorMessage =
+				error.message.charAt(0).toUpperCase() + error.message.slice(1)
+
+			vscode.window
+				.showErrorMessage(errorMessage, "Go to ollama website")
+				.then((action) => {
+					if (action === "Go to ollama website") {
+						vscode.env.openExternal(
+							vscode.Uri.parse("https://ollama.com/library"),
+						)
+					}
+				})
+
+			throw new Error()
+		}
+
 		throw new Error(
 			"Unable to connect to ollama. Please, check that ollama is running.",
 		)

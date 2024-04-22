@@ -1,5 +1,5 @@
 import { workspace } from "vscode"
-import { EmojisMap, Model } from "./types/llm"
+import { type EmojisMap, Model } from "./types/llm"
 
 export const defaultConfig = {
 	model: Model.Mistral,
