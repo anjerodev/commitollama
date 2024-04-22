@@ -9,7 +9,7 @@
 		"url": "https://github.com/JepriCreations/commitollama.git"
 	},
 	"engines": {
-		"vscode": "^1.85.0"
+		"vscode": "^1.88.0"
 	},
 	"categories": ["Machine Learning", "Programming Languages"],
 	"icon": "icon.jpg",
