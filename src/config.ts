@@ -2,7 +2,7 @@ import { workspace } from "vscode"
 import { type EmojisMap, Model } from "./types/llm"
 
 export const defaultConfig = {
-	model: Model.Llama3,
+	model: Model.Llama3_1,
 	useEmojis: false,
 	commitEmojis: {
 		feat: "✨",
