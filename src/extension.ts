@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
-					title: `Pulling model ${model}, this can take a while... Please be patient.`,
+					title: `Pulling model "${model}", this can take a while... Please be patient.`,
 					cancellable: true,
 				},
 				async (progress, token) => {
@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 					try {
 						await pullPromise
 						vscode.window.showInformationMessage(
-							`Model ${model} pulled successfully.`,
+							`Model "${model}" pulled successfully.`,
 						)
 					} catch (error: any) {
 						if (error === "pull-cancelled") {
@@ -89,6 +89,9 @@ async function createCommitMessage(repo: Repository) {
 		async () => {
 			vscode.commands.executeCommand("workbench.view.scm")
 			try {
+				// Clean the current message:
+				repo.inputBox.value = ""
+
 				const ind = await repo.diffIndexWithHEAD()
 
 				if (ind.length === 0) {
