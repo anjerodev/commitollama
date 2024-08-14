@@ -39,19 +39,23 @@ export async function getSummary(diff: string): Promise<string> {
 			.split("\n")
 			.map((v) => v.trim())
 			.join("\n")
-
-		// biome-ignore lint/suspicious/noExplicitAny: no-explicit-any for error handling
 	} catch (error: any) {
 		if (error?.status_code === 404) {
 			const errorMessage =
 				error.message.charAt(0).toUpperCase() + error.message.slice(1)
 
 			vscode.window
-				.showErrorMessage(errorMessage, "Go to ollama website")
+				.showErrorMessage(errorMessage, "Go to ollama website", "Pull model")
 				.then((action) => {
 					if (action === "Go to ollama website") {
 						vscode.env.openExternal(
 							vscode.Uri.parse("https://ollama.com/library"),
+						)
+					}
+					if (action === "Pull model") {
+						vscode.commands.executeCommand(
+							"commitollama.runOllamaPull",
+							modelName,
 						)
 					}
 				})

@@ -23,6 +23,10 @@
 				"command": "commitollama.createCommit",
 				"title": "Run Commitollama",
 				"icon": "$(sparkle)"
+			},
+			{
+				"command": "commitollama.runOllamaPull",
+				"title": "Pull model from ollama"
 			}
 		],
 		"menus": {
@@ -40,14 +44,8 @@
 				"properties": {
 					"commitollama.model": {
 						"type": "string",
-						"enum": [
-							"llama3:latest",
-							"codegemma:latest",
-							"codellama:7b-instruct",
-							"mistral:latest",
-							"custom"
-						],
-						"default": "llama3:latest",
+						"enum": ["Llama", "Codegemma", "Codellama", "Mistral", "Custom"],
+						"default": "Llama",
 						"description": "Model to use for the commit creations.",
 						"order": 0
 					},

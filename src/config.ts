@@ -1,8 +1,8 @@
 import { workspace } from "vscode"
-import { type EmojisMap, Model } from "./types/llm"
+import { type EmojisMap, type Model, Models } from "./types/llm"
 
 export const defaultConfig = {
-	model: Model.Llama,
+	model: Models.Llama,
 	useEmojis: false,
 	commitEmojis: {
 		feat: "✨",
@@ -23,8 +23,9 @@ class Config {
 		const config = this.#config
 
 		// Load model
-		let modelName: string | Model = config.get("model") || defaultConfig.model
-		if (modelName === "custom") {
+		const configModel = config.get("model") as Model
+		let modelName: string | Model = Models?.[configModel] || defaultConfig.model
+		if (modelName === "Custom") {
 			modelName = config.get("custom.model") as string
 		}
 

@@ -1,9 +1,10 @@
 import * as vscode from "vscode"
 import type { GitExtension, Repository } from "./types/git"
 import { getCommitMessage, getSummary } from "./generator"
+import ollama from "ollama"
 
 export function activate(context: vscode.ExtensionContext) {
-	const disposable = vscode.commands.registerCommand(
+	const createCommitDisposable = vscode.commands.registerCommand(
 		"commitollama.createCommit",
 		async (uri?) => {
 			const git = getGitExtension()
@@ -27,7 +28,49 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	)
 
-	context.subscriptions.push(disposable)
+	const ollamaPullDisposable = vscode.commands.registerCommand(
+		"commitollama.runOllamaPull",
+		async (model: string) => {
+			vscode.window.withProgress(
+				{
+					location: vscode.ProgressLocation.Notification,
+					title: `Pulling model ${model}, this can take a while... Please be patient.`,
+					cancellable: true,
+				},
+				async (progress, token) => {
+					if (!model) {
+						vscode.window.showErrorMessage("Please provide a model name.")
+						return
+					}
+
+					let pullPromise = ollama.pull({ model })
+
+					token.onCancellationRequested(() => {
+						vscode.window.showInformationMessage("Model pull cancelled.")
+						pullPromise = Promise.reject("pull-cancelled")
+					})
+
+					try {
+						await pullPromise
+						vscode.window.showInformationMessage(
+							`Model ${model} pulled successfully.`,
+						)
+					} catch (error: any) {
+						if (error === "pull-cancelled") {
+							vscode.window.showInformationMessage("Model pull was cancelled.")
+						} else {
+							vscode.window.showErrorMessage(
+								error?.message || "The model could not be pulled.",
+							)
+						}
+					}
+				},
+			)
+		},
+	)
+
+	context.subscriptions.push(createCommitDisposable)
+	context.subscriptions.push(ollamaPullDisposable)
 }
 
 async function getSummaryUriDiff(repo: Repository, uri: string) {
@@ -61,12 +104,10 @@ async function createCommitMessage(repo: Repository) {
 
 				const commitMessage = await getCommitMessage(summaries)
 				repo.inputBox.value = commitMessage
-
-				// biome-ignore lint/suspicious/noExplicitAny: no-explicit-any for error handling
 			} catch (error: any) {
-				if (error?.message) {
-					vscode.window.showErrorMessage(error.message)
-				}
+				vscode.window.showErrorMessage(
+					error?.message || "Unable to create commit message.",
+				)
 			}
 		},
 	)
