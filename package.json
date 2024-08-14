@@ -9,7 +9,7 @@
 		"url": "https://github.com/JepriCreations/commitollama.git"
 	},
 	"engines": {
-		"vscode": "^1.88.0"
+		"vscode": "^1.92.0"
 	},
 	"categories": ["Machine Learning", "Programming Languages"],
 	"icon": "icon.jpg",
@@ -127,7 +127,8 @@
 		"watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"pretest": "npm run build && npm run lint",
 		"lint": "npm dlx @biomejs/biome lint src",
-		"test": "vscode-test"
+		"test": "vscode-test",
+		"publish": "npm run build && vsce publish"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
