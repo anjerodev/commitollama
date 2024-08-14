@@ -55,6 +55,12 @@
 						"description": "Enable or disable the use of emojis in commit messages.",
 						"order": 1
 					},
+					"commitollama.useDescription": {
+						"type": "boolean",
+						"default": false,
+						"description": "Enable or disable the use of commit description.",
+						"order": 2
+					},
 					"commitollama.commitEmojis": {
 						"type": "object",
 						"default": {
@@ -68,25 +74,25 @@
 							"revert": "⏪"
 						},
 						"description": "Map commit types to emojis. Only used if emojis are enabled.",
-						"order": 2
+						"order": 3
 					},
 					"commitollama.custom.endpoint": {
 						"type": "string",
 						"default": "",
 						"description": "Ollama Server Endpoint. Empty for default ollama endpoint.",
-						"order": 3
+						"order": 4
 					},
 					"commitollama.custom.model": {
 						"type": "string",
 						"default": "",
 						"description": "You can use a non-listed model always that you have it pulled from ollama. Note: It only will be selected when model is set to \"custom\".",
-						"order": 4
+						"order": 5
 					},
 					"commitollama.custom.summaryPrompt": {
 						"type": "string",
 						"default": "",
 						"description": "Custom prompt for summarize the git diff.",
-						"order": 5
+						"order": 6
 					},
 					"commitollama.custom.summaryTemperature": {
 						"type": "number",
@@ -94,13 +100,13 @@
 						"minimum": 0,
 						"maximum": 1,
 						"description": "Custom temperature for summarize the git diff. (greater = more creative)",
-						"order": 6
+						"order": 7
 					},
 					"commitollama.custom.commitPrompt": {
 						"type": "string",
 						"default": "",
 						"description": "Custom prompt for commit message.",
-						"order": 7
+						"order": 8
 					},
 					"commitollama.custom.commitTemperature": {
 						"type": "number",
@@ -108,7 +114,7 @@
 						"minimum": 0,
 						"maximum": 1,
 						"description": "Custom temperature for commit message. (greater = more creative)",
-						"order": 8
+						"order": 9
 					}
 				}
 			}

@@ -3,6 +3,7 @@ import { type EmojisMap, type Model, Models } from "./types/llm"
 
 export const defaultConfig = {
 	model: Models.Llama,
+	useDescription: false,
 	useEmojis: false,
 	commitEmojis: {
 		feat: "✨",
@@ -28,6 +29,8 @@ class Config {
 		if (modelName === "Custom") {
 			modelName = config.get("custom.model") as string
 		}
+		const useDescription: boolean =
+			config.get("useDescription") || defaultConfig.useDescription
 
 		// Load Emojis Config
 		const useEmojis: boolean =
@@ -55,6 +58,7 @@ class Config {
 			summaryTemperature,
 			commitPrompt,
 			commitTemperature,
+			useDescription,
 			useEmojis,
 			commitEmojis,
 		}
