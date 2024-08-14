@@ -16,14 +16,14 @@ A Github Copilot commits generator free alternative, that run on your device usi
 ## Requirements
 
 - Install [Ollama][1] on your local machine.
-- Install the model to use: `ollama pull [model_name]`, recommended to use `llama3` or `codegemma`. In the tests I did, it works better with `llama3`.
+- Install the model to use: `ollama pull [model_name]`, recommended to use `llama3.1` or `codegemma`. In the tests I did, it works better with `llama3.1`.
 - Make sure ollama is running, you can do it by visiting http://127.0.0.1:11434/ in your web browser (The port number might be different for you). If not, only opening the app should be enough, or run in your terminal: `ollama serve`.
 
 ## Configuration
 
 - Model: You can select the model from the plugin configuration.
 
-  `llama3` - default
+  `llama3.1` - default
 
   `codegemma`
 
