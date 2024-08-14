@@ -31,7 +31,7 @@ A Github Copilot commits generator free alternative, that run on your device usi
 
   `Mistral` (Uses mistral:latest)
 
-  `Custom` - It allow you to write down the model name that you have set on ollama.
+  `Custom` - It allow you to write down any other model name from ollama.
 
 - Use Description: It allow you to enable or disable the use of commit description.
 
