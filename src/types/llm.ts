@@ -1,5 +1,5 @@
 export enum Model {
-	Llama3 = "llama3:latest",
+	Llama = "llama3.1:latest",
 	Codegemma = "codegemma:latest",
 	Codellama = "codellama",
 	Mistral = "mistral:latest",
