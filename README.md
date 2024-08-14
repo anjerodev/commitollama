@@ -16,22 +16,24 @@ A Github Copilot commits generator free alternative, that run on your device usi
 ## Requirements
 
 - Install [Ollama][1] on your local machine.
-- Install the model to use: `ollama pull [model_name]`, recommended to use `llama3` or `codegemma`. In the tests I did, it works better with `llama3`.
+- Install the model to use: `ollama pull [model_name]`, recommended to use `llama3.1`.
 - Make sure ollama is running, you can do it by visiting http://127.0.0.1:11434/ in your web browser (The port number might be different for you). If not, only opening the app should be enough, or run in your terminal: `ollama serve`.
 
 ## Configuration
 
 - Model: You can select the model from the plugin configuration.
 
-  `llama3` - default
+  `Llama` - default (Uses llama3.1:latest)
 
-  `codegemma`
+  `Codegemma` (Uses codegemma:latest)
 
-  `codellama`
+  `Codellama` (Uses codellama. Worst result obtained)
 
-  `mistral`
+  `Mistral` (Uses mistral:latest)
 
-  `custom` - It allow you to write down the model name that you have set on ollama.
+  `Custom` - It allow you to write down the model name that you have set on ollama.
+
+- Use Description: It allow you to enable or disable the use of commit description.
 
 - Use Emojis: It allow you to enable or disable the use of emojis in commit messages.
 
@@ -66,17 +68,26 @@ Sometimes can generate quite long commits, but it give you an idea of what the c
 
 ## Release Notes
 
+### 1.7.0
+
+- Added support for commit description.
+- Now if a model is not installed, you will have the option to pull it from the notification.
+
+### 1.4.0 to 1.6.0
+
+- Fixes and refactoring.
+
 ### 1.3.0
 
-Added support for emojis.
+- Added support for emojis.
 
 ### 1.2.0
 
-Added support for custom prompts and llm temperature.
+- Added support for custom prompts and llm temperature.
 
 ### 1.0.0
 
-Initial release of commitollama.
+- Initial release of commitollama.
 
 [1]: https://ollama.ai/
 [2]: https://raw.githubusercontent.com/jepricreations/commitollama/main/commitollama-demo.gif
