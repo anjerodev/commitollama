@@ -3,7 +3,7 @@
 	"displayName": "commitollama",
 	"description": "AI Commits with ollama",
 	"publisher": "Commitollama",
-	"version": "1.7.1",
+	"version": "1.7.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/JepriCreations/commitollama.git"
@@ -11,10 +11,20 @@
 	"engines": {
 		"vscode": "^1.92.0"
 	},
-	"categories": ["Machine Learning", "Programming Languages"],
+	"categories": [
+		"Machine Learning",
+		"Programming Languages"
+	],
 	"icon": "icon.jpg",
 	"license": "MIT",
-	"keywords": ["code", "assistant", "ai", "llm", "commits", "ollama"],
+	"keywords": [
+		"code",
+		"assistant",
+		"ai",
+		"llm",
+		"commits",
+		"ollama"
+	],
 	"main": "./dist/extension.js",
 	"activationEvents": [],
 	"contributes": {
@@ -44,7 +54,13 @@
 				"properties": {
 					"commitollama.model": {
 						"type": "string",
-						"enum": ["Llama", "Codegemma", "Codellama", "Mistral", "Custom"],
+						"enum": [
+							"Llama",
+							"Codegemma",
+							"Codellama",
+							"Mistral",
+							"Custom"
+						],
 						"default": "Llama",
 						"description": "Model to use for the commit creations.",
 						"order": 0
