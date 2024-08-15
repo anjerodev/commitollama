@@ -128,7 +128,9 @@
 		"pretest": "npm run build && npm run lint",
 		"lint": "npm dlx @biomejs/biome lint src",
 		"test": "vscode-test",
-		"publish": "npm run build && vsce publish"
+		"publish": "npm run build && vsce publish",
+		"publish:minor": "npm run build && vsce publish minor",
+		"publish:patch": "npm run build && vsce publish patch"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
