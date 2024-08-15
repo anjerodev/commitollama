@@ -26,9 +26,11 @@ class Config {
 		// Load model
 		const configModel = config.get("model") as Model
 		let modelName: string | Model = Models?.[configModel] || defaultConfig.model
-		if (modelName === "Custom") {
+
+		if (modelName.toLocaleLowerCase() === Models.Custom) {
 			modelName = config.get("custom.model") as string
 		}
+
 		const useDescription: boolean =
 			config.get("useDescription") || defaultConfig.useDescription
 

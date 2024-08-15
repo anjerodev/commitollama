@@ -3,6 +3,7 @@ export const Models = {
 	Codegemma: "codegemma:latest",
 	Codellama: "codellama",
 	Mistral: "mistral:latest",
+	Custom: "custom",
 } as const
 
 export type Model = keyof typeof Models
