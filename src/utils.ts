@@ -1,6 +1,22 @@
 import * as vscode from 'vscode'
 import type { GitExtension, Repository } from './types/git'
 import { getCommitMessage, getSummary } from './generator'
+import type { ExtensionConfig } from './types/config'
+
+export function getConfig<K extends keyof ExtensionConfig>(key: K) {
+	return vscode.workspace
+		.getConfiguration('commitollama')
+		.get<ExtensionConfig[K]>(key)
+}
+
+export function setConfig<K extends keyof ExtensionConfig>(
+	key: K,
+	value: ExtensionConfig[K],
+) {
+	return vscode.workspace
+		.getConfiguration('commitollama')
+		.update(key, value, vscode.ConfigurationTarget.Workspace)
+}
 
 export async function getSummaryUriDiff(repo: Repository, uri: string) {
 	const diff = await repo.diffIndexWithHEAD(uri)

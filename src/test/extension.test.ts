@@ -4,7 +4,7 @@ import * as sinon from 'sinon'
 import * as extension from '../extension'
 import * as ollama from 'ollama'
 import { getSummary, getCommitMessage } from '../generator'
-import { defaultConfig } from '../config'
+import { getConfig, getGitExtension, setConfig } from '../utils'
 
 suite('Extension Test Suite', () => {
 	test('Extension is active', () => {
@@ -12,7 +12,7 @@ suite('Extension Test Suite', () => {
 	})
 
 	test('Get Git Extension', () => {
-		const gitExtension = extension.getGitExtension()
+		const gitExtension = getGitExtension()
 		assert.ok(gitExtension)
 	})
 })
@@ -96,45 +96,24 @@ suite('getCommitMessage Tests', () => {
 	test('Should add emojis if configured to use emojis', async () => {
 		ollamaChatStub.resolves(commitMessageResponse)
 
-		const config = vscode.workspace.getConfiguration('commitollama')
-		const originalEmojis = config.commitEmojis
-		const originalUseEmojis = config.useEmojis
+		const originalEmojis = getConfig('commitEmojis')
+		const originalUseEmojis = getConfig('useEmojis')
 
-		await config.update(
-			'commitEmojis',
-			{
-				...defaultConfig.commitEmojis,
-				feat: '🔥',
-			},
-			vscode.ConfigurationTarget.Workspace,
-		)
-		await config.update('useEmojis', true, vscode.ConfigurationTarget.Workspace)
+		setConfig('useEmojis', true)
+		setConfig('commitEmojis', { ...originalEmojis!, feat: '🔥' })
 
 		const result = await getCommitMessage(summariesSample)
 
 		assert.strictEqual(result, 'feat 🔥: Add new feature')
-		await config.update(
-			'commitEmojis',
-			originalEmojis,
-			vscode.ConfigurationTarget.Workspace,
-		)
-		await config.update(
-			'useEmojis',
-			originalUseEmojis,
-			vscode.ConfigurationTarget.Workspace,
-		)
+		setConfig('useEmojis', originalUseEmojis!)
+		setConfig('commitEmojis', originalEmojis!)
 	})
 
 	test('Should add summaries as descriptions if configured to use descriptions', async () => {
 		ollamaChatStub.resolves(commitMessageResponse)
-		const config = vscode.workspace.getConfiguration('commitollama')
 
-		const originalUseDescription = config.useDescription
-		await config.update(
-			'useDescription',
-			true,
-			vscode.ConfigurationTarget.Workspace,
-		)
+		const originalUseDescription = getConfig('useDescription')
+		setConfig('useDescription', true)
 
 		const result = await getCommitMessage(summariesSample)
 
@@ -143,10 +122,6 @@ suite('getCommitMessage Tests', () => {
 			'feat: Add new feature\n\n- Added a feature\n- Fixed a bug',
 		)
 
-		await config.update(
-			'useDescription',
-			originalUseDescription,
-			vscode.ConfigurationTarget.Workspace,
-		)
+		setConfig('useDescription', originalUseDescription!)
 	})
 })
