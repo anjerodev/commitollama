@@ -1,5 +1,5 @@
 export const Models = {
-	Llama: 'llama3.1:latest',
+	Llama: 'llama3.2:latest',
 	Codegemma: 'codegemma:latest',
 	Codellama: 'codellama',
 	Mistral: 'mistral:latest',
