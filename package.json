@@ -11,21 +11,11 @@
 	"engines": {
 		"vscode": "^1.92.0"
 	},
-	"categories": [
-		"Machine Learning",
-		"Programming Languages"
-	],
+	"categories": ["Machine Learning", "Programming Languages"],
 	"icon": "icon.jpg",
 	"license": "MIT",
-	"keywords": [
-		"code",
-		"assistant",
-		"ai",
-		"llm",
-		"commits",
-		"ollama"
-	],
-	"main": "./dist/extension.js",
+	"keywords": ["code", "assistant", "ai", "llm", "commits", "ollama"],
+	"main": "./out/extension.js",
 	"activationEvents": [],
 	"contributes": {
 		"commands": [
@@ -54,13 +44,7 @@
 				"properties": {
 					"commitollama.model": {
 						"type": "string",
-						"enum": [
-							"Llama",
-							"Codegemma",
-							"Codellama",
-							"Mistral",
-							"Custom"
-						],
+						"enum": ["Llama", "Codegemma", "Codellama", "Mistral", "Custom"],
 						"default": "Llama",
 						"description": "Model to use for the commit creations.",
 						"order": 0
@@ -137,28 +121,32 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run esbuild-base --minify",
-		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
-		"build": "npm run -S esbuild-base -- --sourcemap",
-		"watch": "npm run -S esbuild-base -- --sourcemap --watch",
-		"pretest": "npm run build && npm run lint",
-		"lint": "npm dlx @biomejs/biome lint src",
+		"vscode:prepublish": "npm run build",
+		"build": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"lint": "npx @biomejs/biome lint ./src",
+		"format": "npx @biomejs/biome format ./src",
+		"format-fix": "npx @biomejs/biome format ./src --fix",
 		"test": "vscode-test",
 		"publish": "npm run build && vsce publish",
 		"publish:minor": "npm run build && vsce publish minor",
 		"publish:patch": "npm run build && vsce publish patch"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.3",
-		"@types/mocha": "10.0.7",
-		"@types/node": "22.2.0",
-		"@types/vscode": "1.92.0",
+		"@biomejs/biome": "1.9.2",
+		"@types/mocha": "10.0.8",
+		"@types/node": "22.7.4",
+		"@types/sinon": "^17.0.3",
+		"@types/vscode": "1.93.0",
 		"@vscode/test-cli": "0.0.10",
 		"@vscode/test-electron": "2.4.1",
-		"esbuild": "0.23.0",
-		"typescript": "5.5.4"
+		"esbuild": "0.24.0",
+		"mocha": "10.7.3",
+		"sinon": "19.0.2",
+		"typescript": "5.6.2"
 	},
 	"dependencies": {
-		"ollama": "0.5.8"
-	}
+		"ollama": "0.5.9"
+	},
+	"extensionDependencies": ["vscode.git"]
 }

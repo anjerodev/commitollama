@@ -1,0 +1,14 @@
+{
+	"commitollama.commitEmojis": {
+		"feat": "✨",
+		"fix": "🐛",
+		"docs": "📝",
+		"style": "💎",
+		"refactor": "♻️",
+		"test": "🧪",
+		"chore": "📦",
+		"revert": "⏪"
+	},
+	"commitollama.useEmojis": false,
+	"commitollama.useDescription": false
+}
