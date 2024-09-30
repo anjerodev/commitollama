@@ -1,6 +1,7 @@
 import { config } from './config'
 import { Ollama } from 'ollama'
 import * as vscode from 'vscode'
+import { OLLAMA_URL } from './constants'
 
 export async function getSummary(diff: string): Promise<string> {
 	const { summaryPrompt, endpoint, summaryTemperature, modelName } =
@@ -48,9 +49,7 @@ export async function getSummary(diff: string): Promise<string> {
 				.showErrorMessage(errorMessage, 'Go to ollama website', 'Pull model')
 				.then((action) => {
 					if (action === 'Go to ollama website') {
-						vscode.env.openExternal(
-							vscode.Uri.parse('https://ollama.com/library'),
-						)
+						vscode.env.openExternal(vscode.Uri.parse(OLLAMA_URL))
 					}
 					if (action === 'Pull model') {
 						vscode.commands.executeCommand(
@@ -79,6 +78,7 @@ export async function getCommitMessage(summaries: string[]) {
 		commitEmojis,
 		modelName,
 	} = config.inference
+
 	const ollama = new Ollama({ host: endpoint })
 
 	const defaultCommitPrompt = `You are an expert developer specialist in creating commits messages.

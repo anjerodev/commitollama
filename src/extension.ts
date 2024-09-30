@@ -69,8 +69,6 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	context.subscriptions.push(createCommitDisposable, ollamaPullDisposable)
-
-	vscode.commands.executeCommand('notifications-sample.showInfo')
 }
 
 export function deactivate() {}
