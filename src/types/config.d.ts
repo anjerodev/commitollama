@@ -5,12 +5,10 @@ export type ExtensionConfig = {
 	useEmojis: boolean
 	useDescription: boolean
 	commitEmojis: EmojisMap
-	custom: {
-		endpoint: string
-		model: string
-		summaryPrompt: string
-		summaryTemperature: number
-		commitPrompt: string
-		commitTemperature: number
-	}
+	'custom.endpoint': string
+	'custom.model': string
+	'custom.summaryPrompt': string
+	'custom.summaryTemperature': number
+	'custom.commitPrompt': string
+	'custom.commitTemperature': number
 }

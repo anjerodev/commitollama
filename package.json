@@ -47,17 +47,20 @@
 						"type": "string",
 						"enum": ["Llama", "Codegemma", "Codellama", "Mistral", "Custom"],
 						"description": "Model to use for the commit creations.",
-						"default": "Llama"
+						"default": "Llama",
+						"order": 0
 					},
 					"commitollama.useEmojis": {
 						"type": "boolean",
 						"description": "Enable or disable the use of emojis in commit messages.",
-						"default": false
+						"default": false,
+						"order": 1
 					},
 					"commitollama.useDescription": {
 						"type": "boolean",
 						"description": "Enable or disable the use of commit description.",
-						"default": false
+						"default": false,
+						"order": 2
 					},
 					"commitollama.commitEmojis": {
 						"type": "object",
@@ -71,37 +74,44 @@
 							"test": "🧪",
 							"chore": "📦",
 							"revert": "⏪"
-						}
+						},
+						"order": 3
 					},
 					"commitollama.custom.endpoint": {
 						"type": "string",
-						"description": "Ollama Server Endpoint. Empty for default ollama endpoint."
+						"description": "Ollama Server Endpoint. Empty for default ollama endpoint.",
+						"order": 4
 					},
 					"commitollama.custom.model": {
 						"type": "string",
-						"description": "You can use a non-listed model always that you have it pulled from ollama. Note: It only will be selected when model is set to \"Custom\"."
+						"description": "You can use a non-listed model always that you have it pulled from ollama. Note: It only will be selected when model is set to \"Custom\".",
+						"order": 5
 					},
 					"commitollama.custom.summaryPrompt": {
 						"type": "string",
-						"description": "Custom prompt for summarize the git diff."
+						"description": "Custom prompt for summarize the git diff.",
+						"order": 6
 					},
 					"commitollama.custom.summaryTemperature": {
 						"type": "number",
 						"minimum": 0,
 						"maximum": 1,
 						"description": "Custom temperature for summarize the git diff. (greater = more creative)",
-						"default": 0.8
+						"default": 0.8,
+						"order": 7
 					},
 					"commitollama.custom.commitPrompt": {
 						"type": "string",
-						"description": "Custom prompt for commit message."
+						"description": "Custom prompt for commit message.",
+						"order": 8
 					},
 					"commitollama.custom.commitTemperature": {
 						"type": "number",
 						"minimum": 0,
 						"maximum": 1,
 						"description": "Custom temperature for commit message. (greater = more creative)",
-						"default": 0.2
+						"default": 0.2,
+						"order": 9
 					}
 				}
 			}

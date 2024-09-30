@@ -12,7 +12,7 @@ class Config {
 		let modelName: string | Model = Models[configModel]
 
 		if (configModel === 'Custom') {
-			modelName = getConfig('custom')?.model || ''
+			modelName = getConfig('custom.model') || ''
 		}
 
 		// Load Emojis Config
@@ -21,17 +21,17 @@ class Config {
 		const useDescription = getConfig('useDescription') as boolean
 
 		// Load endpoint
-		let endpoint = getConfig('custom')?.endpoint || defaultConfig.endpoint
+		let endpoint = getConfig('custom.endpoint') || defaultConfig.endpoint
 		if (endpoint.endsWith('/')) {
 			endpoint = endpoint.slice(0, -1).trim()
 		}
 
 		// Load custom prompt and temperatures
-		const summaryPrompt = getConfig('custom')?.summaryPrompt
-		const summaryTemperature = getConfig('custom')?.summaryTemperature as number
+		const summaryPrompt = getConfig('custom.summaryPrompt')
+		const summaryTemperature = getConfig('custom.summaryTemperature') as number
 
-		const commitPrompt = getConfig('custom')?.commitPrompt
-		const commitTemperature = getConfig('custom')?.commitTemperature as number
+		const commitPrompt = getConfig('custom.commitPrompt')
+		const commitTemperature = getConfig('custom.commitTemperature') as number
 
 		return {
 			endpoint,
