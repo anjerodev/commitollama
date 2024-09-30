@@ -1,9 +1,9 @@
 export const Models = {
-	Llama: "llama3.1:latest",
-	Codegemma: "codegemma:latest",
-	Codellama: "codellama",
-	Mistral: "mistral:latest",
-	Custom: "custom",
+	Llama: 'llama3.1:latest',
+	Codegemma: 'codegemma:latest',
+	Codellama: 'codellama',
+	Mistral: 'mistral:latest',
+	Custom: 'custom',
 } as const
 
 export type Model = keyof typeof Models

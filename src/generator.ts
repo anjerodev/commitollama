@@ -1,6 +1,6 @@
-import { config } from "./config"
-import { Ollama } from "ollama"
-import * as vscode from "vscode"
+import { config } from './config'
+import { Ollama } from 'ollama'
+import * as vscode from 'vscode'
 
 export async function getSummary(diff: string): Promise<string> {
 	const { summaryPrompt, endpoint, summaryTemperature, modelName } =
@@ -24,11 +24,11 @@ export async function getSummary(diff: string): Promise<string> {
 			},
 			messages: [
 				{
-					role: "system",
+					role: 'system',
 					content: prompt,
 				},
 				{
-					role: "user",
+					role: 'user',
 					content: `Here is the \`git diff\` output: ${diff}`,
 				},
 			],
@@ -36,25 +36,25 @@ export async function getSummary(diff: string): Promise<string> {
 
 		return res.message.content
 			.trimStart()
-			.split("\n")
+			.split('\n')
 			.map((v) => v.trim())
-			.join("\n")
+			.join('\n')
 	} catch (error: any) {
 		if (error?.status_code === 404) {
 			const errorMessage =
 				error.message.charAt(0).toUpperCase() + error.message.slice(1)
 
 			vscode.window
-				.showErrorMessage(errorMessage, "Go to ollama website", "Pull model")
+				.showErrorMessage(errorMessage, 'Go to ollama website', 'Pull model')
 				.then((action) => {
-					if (action === "Go to ollama website") {
+					if (action === 'Go to ollama website') {
 						vscode.env.openExternal(
-							vscode.Uri.parse("https://ollama.com/library"),
+							vscode.Uri.parse('https://ollama.com/library'),
 						)
 					}
-					if (action === "Pull model") {
+					if (action === 'Pull model') {
 						vscode.commands.executeCommand(
-							"commitollama.runOllamaPull",
+							'commitollama.runOllamaPull',
 							modelName,
 						)
 					}
@@ -64,7 +64,7 @@ export async function getSummary(diff: string): Promise<string> {
 		}
 
 		throw new Error(
-			"Unable to connect to ollama. Please, check that ollama is running.",
+			'Unable to connect to ollama. Please, check that ollama is running.',
 		)
 	}
 }
@@ -108,34 +108,34 @@ export async function getCommitMessage(summaries: string[]) {
 			},
 			messages: [
 				{
-					role: "system",
+					role: 'system',
 					content: prompt,
 				},
 				{
-					role: "user",
-					content: `Here are the summaries changes: ${summaries.join(", ")}`,
+					role: 'user',
+					content: `Here are the summaries changes: ${summaries.join(', ')}`,
 				},
 			],
 		})
 
-		let commit = response.message.content.replace(/["`]/g, "")
+		let commit = response.message.content.replace(/["`]/g, '')
 
 		// Add the emoji to the commit if activated
 		if (useEmojis) {
 			const emojisMap = JSON.parse(JSON.stringify(commitEmojis))
 			for (const [type, emoji] of Object.entries(emojisMap)) {
-				const regex = new RegExp(`\\b${type}\\b`, "g")
+				const regex = new RegExp(`\\b${type}\\b`, 'g')
 				commit = commit.replace(regex, `${type} ${emoji}`)
 			}
 		}
 
 		// Add files summaries as description if useDescription is activated
 		if (useDescription) {
-			commit = `${commit}\n\n${summaries.map((s) => `- ${s}`).join("\n")}`
+			commit = `${commit}\n\n${summaries.map((s) => `- ${s}`).join('\n')}`
 		}
 
 		return commit.trim()
 	} catch (error) {
-		throw new Error("Unable to generate commit.")
+		throw new Error('Unable to generate commit.')
 	}
 }

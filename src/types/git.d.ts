@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
+import type {
 	Uri,
 	Event,
 	Disposable,
 	ProviderResult,
 	Command,
 	CancellationToken,
-} from "vscode"
-export { ProviderResult } from "vscode"
+} from 'vscode'
+export { ProviderResult } from 'vscode'
 
 export interface Git {
 	readonly path: string
@@ -136,7 +136,7 @@ export interface LogOptions {
 }
 
 export interface CommitOptions {
-	all?: boolean | "tracked"
+	all?: boolean | 'tracked'
 	amend?: boolean
 	signoff?: boolean
 	signCommit?: boolean
@@ -166,7 +166,7 @@ export interface RefQuery {
 	readonly contains?: string
 	readonly count?: number
 	readonly pattern?: string
-	readonly sort?: "alphabetically" | "committerdate"
+	readonly sort?: 'alphabetically' | 'committerdate'
 }
 
 export interface BranchQuery extends RefQuery {
@@ -300,7 +300,7 @@ export interface PushErrorHandler {
 	): Promise<boolean>
 }
 
-export type APIState = "uninitialized" | "initialized"
+export type APIState = 'uninitialized' | 'initialized'
 
 export interface PublishEvent {
 	repository: Repository
@@ -348,43 +348,43 @@ export interface GitExtension {
 }
 
 export enum GitErrorCodes {
-	BadConfigFile = "BadConfigFile",
-	AuthenticationFailed = "AuthenticationFailed",
-	NoUserNameConfigured = "NoUserNameConfigured",
-	NoUserEmailConfigured = "NoUserEmailConfigured",
-	NoRemoteRepositorySpecified = "NoRemoteRepositorySpecified",
-	NotAGitRepository = "NotAGitRepository",
-	NotAtRepositoryRoot = "NotAtRepositoryRoot",
-	Conflict = "Conflict",
-	StashConflict = "StashConflict",
-	UnmergedChanges = "UnmergedChanges",
-	PushRejected = "PushRejected",
-	RemoteConnectionError = "RemoteConnectionError",
-	DirtyWorkTree = "DirtyWorkTree",
-	CantOpenResource = "CantOpenResource",
-	GitNotFound = "GitNotFound",
-	CantCreatePipe = "CantCreatePipe",
-	PermissionDenied = "PermissionDenied",
-	CantAccessRemote = "CantAccessRemote",
-	RepositoryNotFound = "RepositoryNotFound",
-	RepositoryIsLocked = "RepositoryIsLocked",
-	BranchNotFullyMerged = "BranchNotFullyMerged",
-	NoRemoteReference = "NoRemoteReference",
-	InvalidBranchName = "InvalidBranchName",
-	BranchAlreadyExists = "BranchAlreadyExists",
-	NoLocalChanges = "NoLocalChanges",
-	NoStashFound = "NoStashFound",
-	LocalChangesOverwritten = "LocalChangesOverwritten",
-	NoUpstreamBranch = "NoUpstreamBranch",
-	IsInSubmodule = "IsInSubmodule",
-	WrongCase = "WrongCase",
-	CantLockRef = "CantLockRef",
-	CantRebaseMultipleBranches = "CantRebaseMultipleBranches",
-	PatchDoesNotApply = "PatchDoesNotApply",
-	NoPathFound = "NoPathFound",
-	UnknownPath = "UnknownPath",
-	EmptyCommitMessage = "EmptyCommitMessage",
-	BranchFastForwardRejected = "BranchFastForwardRejected",
-	BranchNotYetBorn = "BranchNotYetBorn",
-	TagConflict = "TagConflict",
+	BadConfigFile = 'BadConfigFile',
+	AuthenticationFailed = 'AuthenticationFailed',
+	NoUserNameConfigured = 'NoUserNameConfigured',
+	NoUserEmailConfigured = 'NoUserEmailConfigured',
+	NoRemoteRepositorySpecified = 'NoRemoteRepositorySpecified',
+	NotAGitRepository = 'NotAGitRepository',
+	NotAtRepositoryRoot = 'NotAtRepositoryRoot',
+	Conflict = 'Conflict',
+	StashConflict = 'StashConflict',
+	UnmergedChanges = 'UnmergedChanges',
+	PushRejected = 'PushRejected',
+	RemoteConnectionError = 'RemoteConnectionError',
+	DirtyWorkTree = 'DirtyWorkTree',
+	CantOpenResource = 'CantOpenResource',
+	GitNotFound = 'GitNotFound',
+	CantCreatePipe = 'CantCreatePipe',
+	PermissionDenied = 'PermissionDenied',
+	CantAccessRemote = 'CantAccessRemote',
+	RepositoryNotFound = 'RepositoryNotFound',
+	RepositoryIsLocked = 'RepositoryIsLocked',
+	BranchNotFullyMerged = 'BranchNotFullyMerged',
+	NoRemoteReference = 'NoRemoteReference',
+	InvalidBranchName = 'InvalidBranchName',
+	BranchAlreadyExists = 'BranchAlreadyExists',
+	NoLocalChanges = 'NoLocalChanges',
+	NoStashFound = 'NoStashFound',
+	LocalChangesOverwritten = 'LocalChangesOverwritten',
+	NoUpstreamBranch = 'NoUpstreamBranch',
+	IsInSubmodule = 'IsInSubmodule',
+	WrongCase = 'WrongCase',
+	CantLockRef = 'CantLockRef',
+	CantRebaseMultipleBranches = 'CantRebaseMultipleBranches',
+	PatchDoesNotApply = 'PatchDoesNotApply',
+	NoPathFound = 'NoPathFound',
+	UnknownPath = 'UnknownPath',
+	EmptyCommitMessage = 'EmptyCommitMessage',
+	BranchFastForwardRejected = 'BranchFastForwardRejected',
+	BranchNotYetBorn = 'BranchNotYetBorn',
+	TagConflict = 'TagConflict',
 }

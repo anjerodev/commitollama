@@ -8,13 +8,17 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noExplicitAny": "warn"
+				"noExplicitAny": "off"
 			}
 		}
 	},
+	"formatter": {
+		"enabled": true
+	},
 	"javascript": {
 		"formatter": {
-			"semicolons": "asNeeded"
+			"semicolons": "asNeeded",
+			"quoteStyle": "single"
 		}
 	}
 }

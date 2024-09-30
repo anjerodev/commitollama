@@ -1,15 +1,15 @@
-import * as vscode from "vscode"
-import type { GitExtension, Repository } from "./types/git"
-import { getCommitMessage, getSummary } from "./generator"
-import ollama from "ollama"
+import * as vscode from 'vscode'
+import type { GitExtension, Repository } from './types/git'
+import { getCommitMessage, getSummary } from './generator'
+import ollama from 'ollama'
 
 export function activate(context: vscode.ExtensionContext) {
 	const createCommitDisposable = vscode.commands.registerCommand(
-		"commitollama.createCommit",
+		'commitollama.createCommit',
 		async (uri?) => {
 			const git = getGitExtension()
 			if (!git) {
-				vscode.window.showErrorMessage("Unable to load Git Extension")
+				vscode.window.showErrorMessage('Unable to load Git Extension')
 				return
 			}
 			if (uri) {
@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	const ollamaPullDisposable = vscode.commands.registerCommand(
-		"commitollama.runOllamaPull",
+		'commitollama.runOllamaPull',
 		async (model: string) => {
 			vscode.window.withProgress(
 				{
@@ -39,15 +39,15 @@ export function activate(context: vscode.ExtensionContext) {
 				},
 				async (progress, token) => {
 					if (!model) {
-						vscode.window.showErrorMessage("Please provide a model name.")
+						vscode.window.showErrorMessage('Please provide a model name.')
 						return
 					}
 
 					let pullPromise = ollama.pull({ model })
 
 					token.onCancellationRequested(() => {
-						vscode.window.showInformationMessage("Model pull cancelled.")
-						pullPromise = Promise.reject("pull-cancelled")
+						vscode.window.showInformationMessage('Model pull cancelled.')
+						pullPromise = Promise.reject('pull-cancelled')
 					})
 
 					try {
@@ -56,11 +56,11 @@ export function activate(context: vscode.ExtensionContext) {
 							`Model "${model}" pulled successfully.`,
 						)
 					} catch (error: any) {
-						if (error === "pull-cancelled") {
-							vscode.window.showInformationMessage("Model pull was cancelled.")
+						if (error === 'pull-cancelled') {
+							vscode.window.showInformationMessage('Model pull was cancelled.')
 						} else {
 							vscode.window.showErrorMessage(
-								error?.message || "The model could not be pulled.",
+								error?.message || 'The model could not be pulled.',
 							)
 						}
 					}
@@ -73,30 +73,30 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(ollamaPullDisposable)
 }
 
-async function getSummaryUriDiff(repo: Repository, uri: string) {
+export async function getSummaryUriDiff(repo: Repository, uri: string) {
 	const diff = await repo.diffIndexWithHEAD(uri)
 	const summary = await getSummary(diff)
 	return summary
 }
 
-async function createCommitMessage(repo: Repository) {
+export async function createCommitMessage(repo: Repository) {
 	vscode.window.withProgress(
 		{
 			location: vscode.ProgressLocation.SourceControl,
 			cancellable: false,
-			title: "Loading commit message",
+			title: 'Loading commit message',
 		},
 		async () => {
-			vscode.commands.executeCommand("workbench.view.scm")
+			vscode.commands.executeCommand('workbench.view.scm')
 			try {
 				// Clean the current message:
-				repo.inputBox.value = ""
+				repo.inputBox.value = ''
 
 				const ind = await repo.diffIndexWithHEAD()
 
 				if (ind.length === 0) {
 					throw new Error(
-						"No changes to commit. Please stage your changes first.",
+						'No changes to commit. Please stage your changes first.',
 					)
 				}
 
@@ -109,15 +109,15 @@ async function createCommitMessage(repo: Repository) {
 				repo.inputBox.value = commitMessage
 			} catch (error: any) {
 				vscode.window.showErrorMessage(
-					error?.message || "Unable to create commit message.",
+					error?.message || 'Unable to create commit message.',
 				)
 			}
 		},
 	)
 }
 
-function getGitExtension() {
-	const vscodeGit = vscode.extensions.getExtension<GitExtension>("vscode.git")
+export function getGitExtension() {
+	const vscodeGit = vscode.extensions.getExtension<GitExtension>('vscode.git')
 	const gitExtension = vscodeGit?.exports
 	return gitExtension?.getAPI(1)
 }
