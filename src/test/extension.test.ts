@@ -99,21 +99,21 @@ suite('getCommitMessage Tests', () => {
 		const originalEmojis = getConfig('commitEmojis')
 		const originalUseEmojis = getConfig('useEmojis')
 
-		setConfig('useEmojis', true)
-		setConfig('commitEmojis', { ...originalEmojis!, feat: '🔥' })
+		await setConfig('useEmojis', true)
+		await setConfig('commitEmojis', { ...originalEmojis!, feat: '🔥' })
 
 		const result = await getCommitMessage(summariesSample)
 
 		assert.strictEqual(result, 'feat 🔥: Add new feature')
-		setConfig('useEmojis', originalUseEmojis!)
-		setConfig('commitEmojis', originalEmojis!)
+		await setConfig('useEmojis', originalUseEmojis!)
+		await setConfig('commitEmojis', originalEmojis!)
 	})
 
 	test('Should add summaries as descriptions if configured to use descriptions', async () => {
 		ollamaChatStub.resolves(commitMessageResponse)
 
 		const originalUseDescription = getConfig('useDescription')
-		setConfig('useDescription', true)
+		await setConfig('useDescription', true)
 
 		const result = await getCommitMessage(summariesSample)
 
@@ -122,6 +122,6 @@ suite('getCommitMessage Tests', () => {
 			'feat: Add new feature\n\n- Added a feature\n- Fixed a bug',
 		)
 
-		setConfig('useDescription', originalUseDescription!)
+		await setConfig('useDescription', originalUseDescription!)
 	})
 })
