@@ -1,6 +1,6 @@
 # Commitollama 🦙
 
-A Github Copilot commits generator free alternative, that run on your device using [ollama][1].
+A GitHub Copilot commit message generator alternative, available for use directly on your device via [Ollama][1].
 
 ## Features
 
@@ -16,28 +16,41 @@ A Github Copilot commits generator free alternative, that run on your device usi
 ## Requirements
 
 - Install [Ollama][1] on your local machine.
-- Install the model to use: `ollama pull [model_name]`, recommended to use `llama3.2`.
-- Make sure ollama is running, you can do it by visiting http://127.0.0.1:11434/ in your web browser (The port number might be different for you). If not, only opening the app should be enough, or run in your terminal: `ollama serve`.
+- Choose and install a model to use with Commitollama. We recommend using `llama3.2`. You can do this by running `ollama pull [model_name]`.
+- Ensure Ollama is running by visiting <http://127.0.0.1:11434> in your web browser (note that the port number may vary, depending on your Ollama configuration). You can start Ollama by running `ollama serve` in your terminal.
 
 ## Configuration
 
-- Model: You can select the model from the plugin configuration.
+- **Model:**
 
-  `Llama` - default (Uses llama3.2:latest)
+  Specify the desired model by tweaking the `commitollama.model` setting. Available options are:
 
-  `Codegemma` (Uses codegemma:latest)
+  `"Llama"` - [*default*] (Uses [`llama3.2:latest`][3])
 
-  `Codellama` (Uses codellama. Worst result obtained)
+  `"Codegemma"` (Uses [`codegemma:latest`][4])
 
-  `Mistral` (Uses mistral:latest)
+  `"Codellama"` (Uses [`codellama`][5]. Worst result obtained)
 
-  `Custom` - It allow you to write down any other model name from ollama.
+  `"Mistral"` (Uses [mistral:latest][6])
 
-- Use Description: It allow you to enable or disable the use of commit description.
+  `"Custom"` - Allows you to specify any model name from the [models available for Ollama][7].
 
-- Use Emojis: It allow you to enable or disable the use of emojis in commit messages.
+- **Use Description:**
 
-- Custom Emojis: It allow you to write down the emojis you want to use in the next template object in the VSCode config.json.
+  *Default: `false`*
+  
+  Allows you to enable or disable the use of commit descriptions.
+
+- **Use Emojis:**
+  
+  *Default: `false`*
+
+  Allows you to enable or disable the use of emojis in commit messages.
+
+- **Custom Emojis:**
+  
+  Tweak your preferred emojis to be used, if "Use Emojis" is enabled. Configurable through the
+  `commitollama.commitEmojis` setting in the VSCode `settings.json`:
 
   ```json
    "commitollama.commitEmojis": {
@@ -52,19 +65,39 @@ A Github Copilot commits generator free alternative, that run on your device usi
   }
   ```
 
-- Custom Endpoint: Ollama usually uses port 11434. It is the value that will be used if empty.
+- **Custom Endpoint:**
 
-- Custom Summary Prompt: The prompt that will be used to generate the summary of all git diff.
+  *Default: `11434`*
 
-- Custom Commit Prompt: The prompt that will be used to generate the commit message.
+  Specify the port to your running Ollama instance. Default value will be used if not specified.
 
-- Custom Summary Temperature: The temperature that will be used to generate the summary of all git diff.
+- **Custom Summary Prompt:**
+  
+  The prompt that will be used to generate the summary of all git diffs. A default value will be used
+  if not specified.
 
-- Custom Commit Temperature: The temperature that will be used to generate the commit message.
+- **Custom Commit Prompt:**
+  
+  The prompt that will be used to generate the commit message. A default value will be used
+  if not specified.
+
+- **Custom Summary Temperature:**
+
+  *Default: `0.8`*
+  
+  The [temperature][8] that will be used to generate the summary of all git diffs.
+
+- **Custom Commit Temperature:**
+  
+  *Default: `0.2`*
+
+  The [temperature][8] that will be used to generate the commit message.
 
 ## Known Issues
 
-Sometimes can generate quite long commits, but it give you an idea of what the commit should be and can be edited manually to achieve the correct length.
+Occasionally, the generated commit message will be quite lengthy. However, these longer commit messages
+can give you an idea of what the commit message should be and can still be edited manually to achieve
+the correct length.
 
 ## Release Notes
 
@@ -83,7 +116,7 @@ Sometimes can generate quite long commits, but it give you an idea of what the c
 
 ### 1.2.0
 
-- Added support for custom prompts and llm temperature.
+- Added support for custom prompts and LLM temperature.
 
 ### 1.0.0
 
@@ -91,3 +124,9 @@ Sometimes can generate quite long commits, but it give you an idea of what the c
 
 [1]: https://ollama.ai/
 [2]: https://raw.githubusercontent.com/jepricreations/commitollama/main/commitollama-demo.gif
+[3]: https://ollama.com/library/llama3.2
+[4]: https://ollama.com/library/codegemma
+[5]: https://ollama.com/library/codellama
+[6]: https://ollama.com/library/mistral
+[7]: https://ollama.com/search
+[8]: https://github.com/ollama/ollama/blob/main/docs/modelfile.md#:~:text=repeat_penalty%201.1-,temperature,-The%20temperature%20of
