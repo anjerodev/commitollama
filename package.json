@@ -163,7 +163,7 @@
 		"@types/mocha": "10.0.10",
 		"@types/node": "22.13.5",
 		"@types/sinon": "17.0.4",
-		"@types/vscode": "^1.90.0",
+		"@types/vscode": "^1.98.0",
 		"@vscode/test-cli": "0.0.10",
 		"@vscode/test-electron": "2.4.1",
 		"esbuild": "0.25.0",
