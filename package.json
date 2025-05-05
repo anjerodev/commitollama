@@ -170,7 +170,7 @@
 		"@vscode/test-electron": "2.4.1",
 		"esbuild": "0.25.3",
 		"mocha": "11.1.0",
-		"sinon": "19.0.2",
+		"sinon": "20.0.0",
 		"typescript": "5.8.3"
 	},
 	"dependencies": {
