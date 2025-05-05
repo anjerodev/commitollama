@@ -163,7 +163,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@types/mocha": "10.0.10",
-		"@types/node": "22.15.2",
+		"@types/node": "22.15.3",
 		"@types/sinon": "17.0.4",
 		"@types/vscode": "^1.98.0",
 		"@vscode/test-cli": "0.0.10",
