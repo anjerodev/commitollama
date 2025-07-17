@@ -83,6 +83,8 @@ Default value: `{{type}} {{emoji}}: {{message}}`
 
 - Custom Description Prompt: A custom prompt to generate the commit description.
 
+- Request Headers: Custom headers that will be sent with each request to the Ollama server. This is useful for authentication or other purposes.
+
 ## Known Issues
 
 Sometimes, depending on the model used, it can generate quite long commit messages. However, it provides a good starting point for what the commit should be and can be manually edited to achieve the desired length.
