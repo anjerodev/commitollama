@@ -23,8 +23,9 @@ export async function generateStructuredCommit(
 		customTypeRules,
 		customCommitMessageRules,
 		customDescriptionPrompt,
+        requestHeaders,
 	} = config.inference
-	const ollama = new Ollama({ host: endpoint })
+	const ollama = new Ollama({ host: endpoint, headers: requestHeaders })
 
 	const typeRules =
 		customTypeRules ||
