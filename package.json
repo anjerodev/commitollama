@@ -197,7 +197,7 @@
 		"typescript": "5.8.3"
 	},
 	"dependencies": {
-		"ollama": "0.5.16"
+		"ollama": "0.6.0"
 	},
 	"extensionDependencies": [
 		"vscode.git"
