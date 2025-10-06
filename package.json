@@ -194,7 +194,7 @@
 		"esbuild": "0.25.8",
 		"mocha": "11.7.1",
 		"sinon": "21.0.0",
-		"typescript": "5.8.3"
+		"typescript": "5.9.3"
 	},
 	"dependencies": {
 		"ollama": "0.5.16"
