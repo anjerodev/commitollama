@@ -191,7 +191,7 @@
 		"@types/vscode": "^1.98.0",
 		"@vscode/test-cli": "0.0.11",
 		"@vscode/test-electron": "2.5.2",
-		"esbuild": "0.25.8",
+		"esbuild": "0.25.11",
 		"mocha": "11.7.1",
 		"sinon": "21.0.0",
 		"typescript": "5.8.3"
