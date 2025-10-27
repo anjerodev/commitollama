@@ -184,7 +184,7 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.7",
+		"@biomejs/biome": "2.3.1",
 		"@types/mocha": "10.0.10",
 		"@types/node": "24.9.1",
 		"@types/sinon": "17.0.4",
