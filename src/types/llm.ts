@@ -1,14 +1,3 @@
-export const Models = {
-	Llama: 'llama3.2:latest',
-	Codegemma: 'codegemma:latest',
-	Codellama: 'codellama',
-	Mistral: 'mistral:latest',
-	Gemma: 'gemma3:latest',
-	Qwen: 'qwen3:latest',
-	Custom: 'custom',
-} as const
-export type Model = keyof typeof Models
-
 export const Languages = {
 	Arabic: 'arabic',
 	Chinese: 'chinese',

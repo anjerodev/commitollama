@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type {
-	Uri,
-	Event,
-	Disposable,
-	ProviderResult,
-	Command,
 	CancellationToken,
+	Command,
+	Disposable,
+	Event,
+	ProviderResult,
+	Uri,
 } from 'vscode'
+
 export { ProviderResult } from 'vscode'
 
 export interface Git {

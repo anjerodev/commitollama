@@ -1,31 +1,125 @@
-import { config } from './config'
-import { Ollama } from 'ollama'
-import type { EmojisMap } from './types/llm'
 import * as vscode from 'vscode'
-import { OLLAMA_URL } from './constants'
+import * as ai from './ai'
+import { isLowQualityCommit } from './commitQuality'
+import { config } from './config'
+import { OLLAMA_LIBRARY_URL } from './constants'
+import { createChatAdapter } from './ollamaAdapter'
+import {
+	buildCommitSchema,
+	type CommitStructure,
+	parseCommitResponse,
+} from './schemas/commit'
+import { formatExtensionError, logExtensionError } from './security/log'
+import { wrapUntrustedContent } from './security/prompt'
+import type { EmojisMap } from './types/llm'
 
-interface CommitStructure {
-	type: string
-	message: string
-	summary?: string
+export type ChangeSummary = {
+	file: string
+	summary: string
 }
 
-export async function generateStructuredCommit(
-	summaries: string[],
+function isModelNotFoundError(error: unknown): boolean {
+	if (!error || typeof error !== 'object') {
+		return false
+	}
+
+	const candidate = error as {
+		status_code?: number
+		message?: string
+		cause?: unknown
+	}
+	if (candidate.status_code === 404) {
+		return true
+	}
+
+	if (
+		typeof candidate.message === 'string' &&
+		/not found/i.test(candidate.message)
+	) {
+		return true
+	}
+
+	if (candidate.cause) {
+		return isModelNotFoundError(candidate.cause)
+	}
+
+	return false
+}
+
+function isStructuredOutputCompatibilityError(error: unknown): boolean {
+	const message = formatExtensionError(error).toLowerCase()
+	return (
+		message.includes('structured output generation failed') ||
+		message.includes('failed to parse structured output as json') ||
+		message.includes('does not support structured outputs')
+	)
+}
+
+function formatChangeSummaries(summaries: ChangeSummary[]): string {
+	return summaries
+		.map(({ file, summary }) => `- ${file}: ${summary}`)
+		.join('\n')
+}
+
+function buildStructuredPrompt(options: {
+	typeRules: string
+	commitMessageRules: string
+	language: string
+	useDescription: boolean
+	descriptionPrompt: string
+	customPrompt?: string
+	extraInstruction?: string
+}): string {
+	const {
+		typeRules,
+		commitMessageRules,
+		language,
+		useDescription,
+		descriptionPrompt,
+		customPrompt,
+		extraInstruction,
+	} = options
+
+	const basePrompt =
+		customPrompt ||
+		`You are an expert developer specialist in creating commit messages.
+	Based on the provided user changes, generate a commit message with the appropriate type.
+
+	Rules for commit type:
+	${typeRules}
+	- Use "docs" only when a summary clearly describes documentation changes (README, docs/, comments, or .md files)
+	- Do not guess "docs" from code-only changes
+
+	Rules for commit message:
+	${commitMessageRules}
+	- Write the message in ${language}
+	- Describe only what is present in the change summaries
+	- Never say the commit is empty, has no changes, or that input is missing
+	- Do not invent files, features, or changes that are not in the summaries
+
+	${useDescription ? descriptionPrompt : ''}
+	Respond using JSON`
+
+	if (!extraInstruction) {
+		return basePrompt
+	}
+
+	return `${basePrompt}\n\n${extraInstruction}`
+}
+
+async function requestStructuredCommit(
+	summaries: ChangeSummary[],
+	extraInstruction?: string,
 ): Promise<CommitStructure> {
 	const {
-		endpoint,
 		promptTemperature,
-		model,
 		language,
 		useDescription,
 		customPrompt,
 		customTypeRules,
 		customCommitMessageRules,
 		customDescriptionPrompt,
-		requestHeaders,
 	} = config.inference
-	const ollama = new Ollama({ host: endpoint, headers: requestHeaders })
 
 	const typeRules =
 		customTypeRules ||
@@ -49,84 +143,99 @@ export async function generateStructuredCommit(
 		customDescriptionPrompt ||
 		'Also provide an extended summary (1-3 sentences) that describes the changes in more detail for the commit description.'
 
-	const structuredPrompt =
-		customPrompt ||
-		`You are an expert developer specialist in creating commit messages.
-	Based on the provided user changes, generate a commit message with the appropriate type.
+	const structuredPrompt = buildStructuredPrompt({
+		typeRules,
+		commitMessageRules,
+		language,
+		useDescription,
+		descriptionPrompt,
+		customPrompt,
+		extraInstruction,
+	})
 
-	Rules for commit type:
-	${typeRules}
+	const wrappedSummaries = wrapUntrustedContent(
+		'summaries',
+		formatChangeSummaries(summaries),
+	)
+	const outputSchema = buildCommitSchema(useDescription, language)
 
-	Rules for commit message:
-	${commitMessageRules}
-	- Write the message in ${language}
-
-	${useDescription ? descriptionPrompt : ''}
-	Respond using JSON`
-
-	const format = {
-		type: 'object',
-		properties: {
-			type: {
-				type: 'string',
-				description:
-					'The commit type (feat, fix, docs, style, test, chore, revert, refactor)',
+	const result = await ai.chat({
+		adapter: createChatAdapter(),
+		systemPrompts: [structuredPrompt],
+		messages: [
+			{
+				role: 'user',
+				content: `Staged change summaries:\n${wrappedSummaries}`,
 			},
-			message: {
-				type: 'string',
-				description: `The commit message in ${language}`,
-			},
-			...(useDescription && {
-				summary: {
-					type: 'string',
-					description: `Extended summary of the changes in ${language}`,
-				},
-			}),
-		},
-		required: useDescription
-			? ['type', 'message', 'summary']
-			: ['type', 'message'],
-	}
-
-	try {
-		const response = await ollama.generate({
-			model,
-			prompt: `${structuredPrompt}\n\nChanges summaries: ${summaries.join(', ')}`,
-			stream: false,
-			format: format,
+		],
+		outputSchema,
+		modelOptions: {
 			options: {
 				temperature: promptTemperature,
-				num_predict: 100,
+				num_predict: 256,
 			},
-		})
+			think: false,
+		} as never,
+	})
 
-		return JSON.parse(response.response)
-	} catch (error: any) {
-		if (error?.status_code === 404) {
-			const errorMessage =
-				error?.message.charAt(0).toUpperCase() + error?.message.slice(1)
+	return parseCommitResponse(result, useDescription, language)
+}
+
+export async function generateStructuredCommit(
+	summaries: ChangeSummary[],
+): Promise<CommitStructure> {
+	try {
+		let commit = await requestStructuredCommit(summaries)
+
+		if (isLowQualityCommit(commit.message, commit.type)) {
+			commit = await requestStructuredCommit(
+				summaries,
+				'The previous response was invalid because it did not describe the staged changes. Use the summaries exactly and describe the real code changes.',
+			)
+		}
+
+		if (isLowQualityCommit(commit.message, commit.type)) {
+			throw new Error(
+				'The model returned a generic commit message that does not match the staged changes. Try another model or reduce unrelated staged files.',
+			)
+		}
+
+		return commit
+	} catch (error: unknown) {
+		logExtensionError('generateStructuredCommit', error)
+
+		if (isModelNotFoundError(error)) {
+			const message = formatExtensionError(error)
+			const errorMessage = message.charAt(0).toUpperCase() + message.slice(1)
 
 			vscode.window
-				.showErrorMessage(errorMessage, 'Go to ollama website', 'Pull model')
+				.showErrorMessage(
+					`${errorMessage} Pull the model in your terminal with "ollama pull <model>".`,
+					'Open Ollama Library',
+				)
 				.then((action) => {
-					if (action === 'Go to ollama website') {
-						vscode.env.openExternal(vscode.Uri.parse(OLLAMA_URL))
-					}
-					if (action === 'Pull model') {
-						vscode.commands.executeCommand('commitollama.runOllamaPull', model)
+					if (action === 'Open Ollama Library') {
+						vscode.env.openExternal(vscode.Uri.parse(OLLAMA_LIBRARY_URL))
 					}
 				})
 
 			throw new Error()
 		}
 
+		const { model } = config.inference
+		if (isStructuredOutputCompatibilityError(error)) {
+			throw new Error(
+				`Failed to generate commit with model "${model}": this model does not produce stable JSON output for Commitollama yet. Try switching model from the Source Control toolbar (swap icon) or Command Palette ("Commitollama: Switch Model"). Raw error: ${formatExtensionError(error)}`,
+			)
+		}
+
 		throw new Error(
-			'Unable to connect to ollama. Please, check that ollama is running.',
+			`Failed to generate commit with model "${model}": ${formatExtensionError(error)}`,
 		)
 	}
 }
 
-export async function getCommitMessage(summaries: string[]) {
+export async function getCommitMessage(summaries: ChangeSummary[]) {
 	const {
 		useDescription,
 		useEmojis,
@@ -135,34 +244,30 @@ export async function getCommitMessage(summaries: string[]) {
 		commitTemplate,
 	} = config.inference
 
-	try {
-		const structuredCommit = await generateStructuredCommit(summaries)
+	const structuredCommit = await generateStructuredCommit(summaries)
 
-		const { type, message, summary } = structuredCommit
+	const { type, message, summary } = structuredCommit
 
-		// Handle lower and upper case commit messages
-		const commitMessage = useLowerCase
-			? message.charAt(0).toLowerCase() + message.slice(1)
-			: message.charAt(0).toUpperCase() + message.slice(1)
+	// Handle lower and upper case commit messages
+	const commitMessage = useLowerCase
+		? message.charAt(0).toLowerCase() + message.slice(1)
+		: message.charAt(0).toUpperCase() + message.slice(1)
 
-		// Handle emojis
-		const emoji = useEmojis ? commitEmojis?.[type as keyof EmojisMap] : ''
+	// Handle emojis
+	const emoji = useEmojis ? commitEmojis?.[type as keyof EmojisMap] : ''
 
-		// Build final commit with template
-		let commit = commitTemplate
-			.replace('{{type}}', type)
-			.replace('{{message}}', commitMessage)
-			.replace('{{emoji}}', emoji)
-			.replace(/\s+/g, ' ') // Replace multiple spaces with single space
-			.replace(/\s+:/g, ':') // Remove space before colon
+	// Build final commit with template
+	let commit = commitTemplate
+		.replace('{{type}}', type)
+		.replace('{{message}}', commitMessage)
+		.replace('{{emoji}}', emoji)
+		.replace(/\s+/g, ' ') // Replace multiple spaces with single space
+		.replace(/\s+:/g, ':') // Remove space before colon
 
-		// Add extended summary as description if useDescription is activated
-		if (useDescription && summary) {
-			commit = `${commit}\n\n${summary}`
-		}
-
-		return commit.trim()
-	} catch (error) {
-		throw new Error('Unable to generate commit.')
+	// Add extended summary as description if useDescription is activated
+	if (useDescription && summary) {
+		commit = `${commit}\n\n${summary}`
 	}
+
+	return commit.trim()
 }

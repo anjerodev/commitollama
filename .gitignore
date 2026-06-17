@@ -1,6 +1,7 @@
 out
 dist
 node_modules
+.pnpm-store
 temp
 .vscode-test/
 *.vsix

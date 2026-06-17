@@ -1,14 +1,13 @@
-import type { EmojisMap, Language, Model } from './llm'
+import type { EmojisMap, Language } from './llm'
 
 export type ExtensionConfig = {
-	model: Model
+	model?: string
 	useEmojis: boolean
 	useDescription: boolean
 	useLowerCase: boolean
 	language: Language
 	promptTemperature: number
 	commitTemplate: string
-	'custom.model'?: string
 	'custom.language'?: string
 	'custom.emojis'?: EmojisMap
 	'custom.endpoint'?: string
