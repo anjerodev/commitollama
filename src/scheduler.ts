@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { summaryCache } from './cache'
+import { isLowQualitySummary } from './commitQuality'
 import { config } from './config'
 import { logExtensionError } from './security/log'
 import { summarizeFileDiff } from './summarizer'
@@ -101,7 +102,9 @@ export class BackgroundScanner {
 			}
 
 			const summary = await summarizeFileDiff(workingDiff)
-			summaryCache.set(uri.fsPath, hash, summary)
+			if (!isLowQualitySummary(summary)) {
+				summaryCache.set(uri.fsPath, hash, summary)
+			}
 		} catch (error) {
 			logExtensionError(`backgroundScan ${uri.fsPath}`, error)
 		}
