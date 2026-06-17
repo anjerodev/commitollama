@@ -1,15 +1,16 @@
 import {
-	type EmojisMap,
-	type Model,
-	type Language,
-	Models,
-	Languages,
-} from './types/llm'
+	DEFAULT_MODEL,
+	DEFAULT_OLLAMA_ENDPOINT,
+	LEGACY_MODEL_SETTINGS,
+} from './constants'
+import { resolveEndpoint } from './security/endpoint'
+import { resolveRequestHeaders } from './security/headers'
+import { type EmojisMap, type Language, Languages } from './types/llm'
 import { getConfig } from './utils'
 
 export const defaultConfig = {
-	endpoint: 'http://127.0.0.1:11434',
-	model: Models.Llama,
+	endpoint: DEFAULT_OLLAMA_ENDPOINT,
+	model: DEFAULT_MODEL,
 	useEmojis: false,
 	useDescription: false,
 	useLowerCase: false,
@@ -27,21 +28,26 @@ export const defaultConfig = {
 		chore: '📦',
 		revert: '⏪',
 	} as EmojisMap,
+	background: {
+		enabled: true,
+		interval: 60,
+		onSave: true,
+	},
 } as const
+
+function resolveModel(): string {
+	const configured = getConfig('model')
+	if (!configured) {
+		return defaultConfig.model
+	}
+
+	return LEGACY_MODEL_SETTINGS[configured] ?? configured
+}
 
 class Config {
 	get inference() {
-		// Load model
-		const configModel = getConfig('model')
-		let model: string | Model = configModel
-			? Models[configModel]
-			: defaultConfig.model
+		const model = resolveModel()
 
-		if (model === Models.Custom) {
-			model = getConfig('custom.model') || defaultConfig.model
-		}
-
-		// Load Emojis config
 		const useEmojis = getConfig('useEmojis') || defaultConfig.useEmojis
 		const customEmojis = getConfig('custom.emojis')
 		const commitEmojis =
@@ -52,14 +58,11 @@ class Config {
 		const useDescription =
 			getConfig('useDescription') || defaultConfig.useDescription
 
-		// Load useLowerCase config
 		const useLowerCase = getConfig('useLowerCase') || defaultConfig.useLowerCase
 
-		// Load commitTemplate config
 		const commitTemplate =
 			getConfig('commitTemplate') || defaultConfig.commitTemplate
 
-		// Load language config
 		const configLanguage = getConfig('language')
 		let language: string | Language = configLanguage
 			? Languages[configLanguage]
@@ -68,25 +71,26 @@ class Config {
 			language = getConfig('custom.language') || defaultConfig.language
 		}
 
-		// Load endpoint
-		let endpoint = getConfig('custom.endpoint') || defaultConfig.endpoint
-		if (endpoint.endsWith('/')) {
-			endpoint = endpoint.slice(0, -1).trim()
-		}
+		const endpoint = resolveEndpoint(getConfig('custom.endpoint'))
+		const requestHeaders = resolveRequestHeaders(
+			getConfig('custom.requestHeaders'),
+		)
 
-		// Load temperature
 		const promptTemperature =
 			getConfig('promptTemperature') || defaultConfig.promptTemperature
 
-		// Load custom prompts
 		const customPrompt = getConfig('custom.prompt')
 		const customTypeRules = getConfig('custom.typeRules')
 		const customCommitMessageRules = getConfig('custom.commitMessageRules')
 		const customDescriptionPrompt = getConfig('custom.descriptionPrompt')
 
-		// Load custom request headers
-		const requestHeaders =
-			getConfig('custom.requestHeaders') || defaultConfig.requestHeaders
+		const background = {
+			enabled:
+				getConfig('background.enabled') ?? defaultConfig.background.enabled,
+			interval:
+				getConfig('background.interval') ?? defaultConfig.background.interval,
+			onSave: getConfig('background.onSave') ?? defaultConfig.background.onSave,
+		}
 
 		return {
 			commitEmojis,
@@ -103,11 +107,7 @@ class Config {
 			useEmojis,
 			useLowerCase,
 			requestHeaders,
-			background: {
-				enabled: getConfig('background.enabled') || false,
-				interval: getConfig('background.interval') || 60,
-				onSave: getConfig('background.onSave') ?? true,
-			},
+			background,
 		}
 	}
 }

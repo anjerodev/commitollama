@@ -3,9 +3,9 @@
 		"module": "commonjs",
 		"target": "ES2021",
 		"lib": ["ES2021", "DOM"],
-		"sourceMap": true,
-		"outDir": "out",
-		"rootDir": "src",
+		"types": ["node", "mocha"],
+		"skipLibCheck": true,
+		"noEmit": true,
 		"strict": true
 	},
 	"include": ["src/**/*.ts"],

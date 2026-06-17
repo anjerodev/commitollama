@@ -1,11 +1,12 @@
 import * as assert from 'node:assert'
-import * as vscode from 'vscode'
 import * as sinon from 'sinon'
-import * as extension from '../extension'
-import { Ollama } from 'ollama'
-import { getCommitMessage, generateStructuredCommit } from '../generator'
-import { getConfig, getGitExtension, setConfig } from '../utils'
+import * as vscode from 'vscode'
+import * as ai from '../ai'
 import { defaultConfig } from '../config'
+import * as extension from '../extension'
+import type { ChangeSummary } from '../generator'
+import { generateStructuredCommit, getCommitMessage } from '../generator'
+import { getConfig, getGitExtension, setConfig } from '../utils'
 
 suite('Extension Test Suite', () => {
 	test('Extension is active', () => {
@@ -19,37 +20,33 @@ suite('Extension Test Suite', () => {
 })
 
 suite('generateStructuredCommit Tests', () => {
-	const summariesSample = ['Added a feature', 'Fixed a bug']
-	const structuredCommitResponse = {
-		response: JSON.stringify({
-			type: 'feat',
-			message: 'Add new feature',
-		}),
-	}
-
-	let ollamaGenerateStub: sinon.SinonStub
+	const summariesSample: ChangeSummary[] = [
+		{ file: 'src/feature.ts', summary: 'Added a feature' },
+		{ file: 'src/bug.ts', summary: 'Fixed a bug' },
+	]
+	let chatStub: sinon.SinonStub
 
 	setup(() => {
-		ollamaGenerateStub = sinon.stub(Ollama.prototype, 'generate')
+		chatStub = sinon.stub(ai.llm, 'chat').resolves({
+			type: 'feat',
+			message: 'Add new feature',
+		})
 	})
 
 	teardown(() => {
-		ollamaGenerateStub.restore()
+		sinon.restore()
 	})
 
 	test('Should return a structured commit for summaries', async () => {
-		ollamaGenerateStub.resolves(structuredCommitResponse)
-
 		const result = await generateStructuredCommit(summariesSample)
 
 		assert.strictEqual(result.type, 'feat')
 		assert.strictEqual(result.message, 'Add new feature')
-		assert(ollamaGenerateStub.calledOnce)
+		assert.ok(chatStub.calledOnce)
 	})
 
 	test('Should show error message when model is not found', async () => {
-		const error = { status_code: 404, message: 'model not found' }
-		ollamaGenerateStub.rejects(error)
+		chatStub.rejects({ status_code: 404, message: 'model not found' })
 
 		const showErrorMessageStub = sinon
 			.stub(vscode.window, 'showErrorMessage')
@@ -57,24 +54,80 @@ suite('generateStructuredCommit Tests', () => {
 
 		try {
 			await generateStructuredCommit(summariesSample)
-		} catch (e) {
+		} catch {
 			// Expected error
 		}
 
 		showErrorMessageStub.restore()
 	})
+
+	test('Should reject malformed JSON from model', async () => {
+		chatStub.resolves({ type: 123, message: 'Add feature' })
+
+		await assert.rejects(
+			() => generateStructuredCommit(summariesSample),
+			/Failed to generate commit with model/,
+		)
+	})
+
+	test('Should reject invalid commit type from model', async () => {
+		chatStub.resolves({ type: 'invalid', message: 'Bad type' })
+
+		await assert.rejects(
+			() => generateStructuredCommit(summariesSample),
+			/Failed to generate commit with model/,
+		)
+	})
+
+	test('Should include Ollama error details when chat fails', async () => {
+		chatStub.rejects({
+			status_code: 400,
+			error: 'model does not support structured outputs',
+		})
+
+		await assert.rejects(
+			() => generateStructuredCommit(summariesSample),
+			/model does not support structured outputs/,
+		)
+	})
+
+	test('Should retry when model returns a generic commit message', async () => {
+		chatStub.onFirstCall().resolves({
+			type: 'chore',
+			message: 'Empty commit or no changes provided',
+		})
+		chatStub.onSecondCall().resolves({
+			type: 'feat',
+			message: 'Add new feature',
+		})
+
+		const result = await generateStructuredCommit(summariesSample)
+
+		assert.strictEqual(result.type, 'feat')
+		assert.strictEqual(result.message, 'Add new feature')
+		assert.strictEqual(chatStub.callCount, 2)
+	})
+
+	test('Should show guidance for structured output parse failures', async () => {
+		chatStub.rejects(
+			new Error(
+				'Structured output generation failed: Failed to parse structured output as JSON. Content:',
+			),
+		)
+
+		await assert.rejects(
+			() => generateStructuredCommit(summariesSample),
+			/Switch Model/,
+		)
+	})
 })
 
 suite('getCommitMessage Tests', () => {
-	const summariesSample = ['Added a feature', 'Fixed a bug']
-	const structuredCommitResponse = {
-		response: JSON.stringify({
-			type: 'feat',
-			message: 'Add new feature',
-		}),
-	}
-
-	let ollamaGenerateStub: sinon.SinonStub
+	const summariesSample: ChangeSummary[] = [
+		{ file: 'src/feature.ts', summary: 'Added a feature' },
+		{ file: 'src/bug.ts', summary: 'Fixed a bug' },
+	]
+	let chatStub: sinon.SinonStub
 	let originalUseEmojis: any
 	let originalUseDescription: any
 	let originalLowerCase: any
@@ -82,23 +135,23 @@ suite('getCommitMessage Tests', () => {
 	let originalCustomCommitTemplate: any
 
 	setup(async () => {
-		ollamaGenerateStub = sinon.stub(Ollama.prototype, 'generate')
-		// Store original config values
+		chatStub = sinon.stub(ai.llm, 'chat').resolves({
+			type: 'feat',
+			message: 'Add new feature',
+		})
 		originalUseEmojis = getConfig('useEmojis')
 		originalUseDescription = getConfig('useDescription')
 		originalLowerCase = getConfig('useLowerCase')
 		originalCustomCommitTemplate = getConfig('commitTemplate')
 		originalCustomEmojis = getConfig('custom.emojis')
 
-		// Reset all config values to default
 		await setConfig('useEmojis', false)
 		await setConfig('useDescription', false)
 		await setConfig('useLowerCase', false)
 	})
 
 	teardown(async () => {
-		ollamaGenerateStub.restore()
-		// Restore original config values
+		sinon.restore()
 		await setConfig('useEmojis', originalUseEmojis)
 		await setConfig('useDescription', originalUseDescription)
 		await setConfig('useLowerCase', originalLowerCase)
@@ -107,17 +160,13 @@ suite('getCommitMessage Tests', () => {
 	})
 
 	test('Should return a commit message based on summaries', async () => {
-		ollamaGenerateStub.resolves(structuredCommitResponse)
-
 		const result = await getCommitMessage(summariesSample)
 
 		assert.strictEqual(result, 'feat: Add new feature')
-		assert(ollamaGenerateStub.calledOnce)
+		assert.ok(chatStub.calledOnce)
 	})
 
 	test('Should add emojis if configured to use emojis', async () => {
-		ollamaGenerateStub.resolves(structuredCommitResponse)
-
 		const originalUseEmojis = getConfig('useEmojis')
 		const originalCustomEmojis = getConfig('custom.emojis')
 
@@ -132,14 +181,11 @@ suite('getCommitMessage Tests', () => {
 	})
 
 	test('Should add summaries as descriptions if configured to use descriptions', async () => {
-		const responseWithDescription = {
-			response: JSON.stringify({
-				type: 'feat',
-				message: 'Add new feature',
-				summary: 'Extended summary of the feature',
-			}),
-		}
-		ollamaGenerateStub.resolves(responseWithDescription)
+		chatStub.resolves({
+			type: 'feat',
+			message: 'Add new feature',
+			summary: 'Extended summary of the feature',
+		})
 
 		const originalUseDescription = getConfig('useDescription')
 		await setConfig('useDescription', true)
@@ -155,7 +201,6 @@ suite('getCommitMessage Tests', () => {
 	})
 
 	test('Should lowercase the message if configured to use lowercase', async () => {
-		ollamaGenerateStub.resolves(structuredCommitResponse)
 		const originalLowercase = getConfig('useLowerCase')
 		await setConfig('useLowerCase', true)
 
@@ -167,7 +212,6 @@ suite('getCommitMessage Tests', () => {
 	})
 
 	test('Should format commit message according to template', async () => {
-		ollamaGenerateStub.resolves(structuredCommitResponse)
 		const originalCustomCommitTemplate = getConfig('commitTemplate')
 		const originalUseEmojis = getConfig('useEmojis')
 

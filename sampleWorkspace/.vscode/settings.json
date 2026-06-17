@@ -1,7 +1,7 @@
 {
-	"commitollama.useEmojis": false,
-	"commitollama.useDescription": false,
-	"commitollama.useLowerCase": false,
-	"commitollama.custom.emojis": {},
-	"commitollama.commitTemplate": "{{type}} {{emoji}}: {{message}}",
+    "commitollama.useEmojis": false,
+    "commitollama.useDescription": false,
+    "commitollama.useLowerCase": false,
+    "commitollama.commitTemplate": "{{type}} {{emoji}}: {{message}}",
+    "commitollama.custom.emojis": {}
 }

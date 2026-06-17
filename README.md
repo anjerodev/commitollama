@@ -1,13 +1,15 @@
 # Commitollama 🦙
 
-A free alternative to Github Copilot's commit generator that runs on your device using [ollama][1].
+A free alternative to Github Copilot's commit generator that runs on your device using [Ollama][1].
 
 ## Features
 
 - No telemetry or tracking.
 - No API key needed.
-- Different models available.
+- Use any model you have already pulled in Ollama.
 - No Internet connection needed.
+- Quick model switching from the Source Control toolbar or Command Palette.
+- Background pre-generation of change summaries for faster commits.
 
 ## Demo
 
@@ -16,98 +18,96 @@ A free alternative to Github Copilot's commit generator that runs on your device
 ## Requirements
 
 - Install [Ollama][1] on your local machine.
-- Install the model to use: `ollama pull [model_name]`, recommended to use `llama3.2` or `gemma3`.
-- Make sure ollama is running, you can do it by visiting http://127.0.0.1:11434/ in your web browser (The port number might be different for you). If not, only opening the app should be enough, or run in your terminal: `ollama serve`.
+- Pull at least one model, for example: `ollama pull llama3.2`
+- Make sure Ollama is running. Open http://127.0.0.1:11434/ in your browser (your port may differ), open the Ollama app, or run `ollama serve`.
+
+### Recommended models
+
+These models work well for commit messages and are highlighted in the model picker:
+
+`llama3.2`, `codellama`, `qwen3`, `qwen2.5-coder:7b`, `mistral`, `gemma3`, `codegemma`
+
+See the [Ollama library][1] for more models.
+
+## Usage
+
+1. Stage your changes in Git.
+2. Run **Commitollama** from the Source Control title bar (sparkle icon).
+3. On first use, pick a model, then choose whether to save it in **project settings** (`.vscode/settings.json`) or **user settings** (all projects). The picker is skipped if `commitollama.model` is already set in either scope.
+4. The generated commit message is written to the commit input box.
+
+### Switching models
+
+Use the swap icon next to the sparkle button in Source Control, or run **Commitollama: Switch Model** from the Command Palette. You can change the model and where it is saved at any time.
+
+You can also set `commitollama.model` manually in VS Code settings.
 
 ## Configuration
 
-- Model: You can select the model from the plugin configuration.
+### General
 
-  `Llama` - default (Uses llama3.2:latest) (slow)
+| Setting | Description | Default |
+| --- | --- | --- |
+| `commitollama.model` | Ollama model tag (e.g. `llama3.2:latest`). Set via the model picker or manually. | `llama3.2:latest` |
+| `commitollama.useEmojis` | Add emojis to commit messages. | `false` |
+| `commitollama.useDescription` | Add a longer description below the subject line. | `false` |
+| `commitollama.useLowerCase` | Lowercase the first letter of the commit message. | `false` |
+| `commitollama.language` | Language preset (`English`, `Spanish`, `Custom`, …). | `English` |
+| `commitollama.promptTemperature` | Model temperature (`0`–`1`). Higher = more creative. | `0.2` |
+| `commitollama.commitTemplate` | Final commit format. Placeholders: `{{type}}`, `{{emoji}}`, `{{message}}`. | `{{type}} {{emoji}}: {{message}}` |
 
-  `Codegemma` (Uses codegemma:latest)
+### Custom overrides
 
-  `Codellama` (Uses codellama. Worst result obtained)
+| Setting | Description |
+| --- | --- |
+| `commitollama.custom.language` | Custom language. Used when `commitollama.language` is `Custom`. |
+| `commitollama.custom.emojis` | Map commit types to emojis. Only used when emojis are enabled. |
+| `commitollama.custom.endpoint` | Ollama server URL. Empty uses `http://127.0.0.1:11434`. |
+| `commitollama.custom.prompt` | Replace the default commit prompt entirely. |
+| `commitollama.custom.typeRules` | Custom rules for commit types. |
+| `commitollama.custom.commitMessageRules` | Custom rules for the commit subject. |
+| `commitollama.custom.descriptionPrompt` | Custom prompt for the commit description. |
+| `commitollama.custom.requestHeaders` | Extra HTTP headers for Ollama requests (e.g. auth). |
 
-  `Mistral` (Uses mistral:latest)
+Example emoji map:
 
-  `Gemma` (Uses gemma3:latest) (fast)
+```json
+"commitollama.custom.emojis": {
+  "feat": "✨",
+  "fix": "🐛",
+  "docs": "📝",
+  "style": "💎",
+  "refactor": "♻️",
+  "test": "🧪",
+  "chore": "📦",
+  "revert": "⏪"
+}
+```
 
-  `Qwen` (Uses qwen3:latest)
+### Background generation
 
-  `Custom` - It allows you to write down any other model name from ollama.
+Summarizes file changes in the background while you work. When you commit, cached summaries are reused when possible, so generation is faster.
 
-- Use Emojis: It allows you to enable or disable the use of emojis in commit messages.
-
-- Use Description: It allows you to enable or disable the use of commit descriptions.
-
-- Use Lowercase: Enables or disables the use of lowercase at the beginning of commit messages.
-
-- Language: Language for commit messages.
-
-- Prompt Temperature: Custom temperature for generating the commit message. (Higher number = more creative)
-
-- Commit Template: It allows you to write down the commit template you want to use. You should use the following placeholders: 
-  - `{{type}}`: It will be replaced by the type of the commit.
-  - `{{emoji}}`: It will be replaced by the emoji selected in the configuration.
-  - `{{message}}`: It will be replaced by the commit message.
-
-Default value: `{{type}} {{emoji}}: {{message}}`
-
-- Custom Model: Allows you to specify any model. The model has to be downloaded and available on your Ollama instance. **Note:** Ignored if `commitollama.model` is not set to "Custom".
-
-- Custom Language: Allows you to specify any language for the commit messages. **Note:** Ignored if `commitollama.language` is not set to "Custom".
-
-- Custom Emojis: Allows you to specify the emojis you want to use in the next template object within the VSCode config.json.
-
-  ```json
-   "commitollama.commitEmojis": {
-    "feat": "✨",
-    "fix": "🐛",
-    "docs": "📝",
-    "style": "💎",
-    "refactor": "♻️",
-    "test": "🧪",
-    "chore": "📦",
-    "revert": "⏪"
-  }
-  ```
-
-- Custom Endpoint: Ollama usually uses port 11434. It is the value that will be used if empty.
-
-- Custom Prompt: The prompt that will be used to generate the commit message instead of the default one. If this field is populated, it will override all the extension prompts and rules.
-
-- Custom Type Rules: Custom rules for commit message types.
-
-- Custom Commit Message Rules: Custom rules for commit messages.
-
-- Custom Description Prompt: A custom prompt to generate the commit description.
-
-- Custom Request Headers: custom request headers that will be sent with each request to Ollama or a custom endpoint. This is useful for authentication and other purposes.
-
-## Background Generation
-
-This feature allows the extension to summarize file changes in the background as you work. When you're ready to commit, the message generation will be much faster because it aggregates these pre-computed summaries.
-
-- **Enabled**: Enable or disable background generation. (Default: `true`)
-- **Interval**: Time in seconds to scan for changes if `On Save` misses something or for periodic checks. (Default: `60`)
-- **On Save**: Trigger background generation immediately when a file is saved. (Default: `true`)
-
-> **Note**: This feature creates a smoother experience by moving the heavy lifting of LLM generation to the background while you code.
+| Setting | Description | Default |
+| --- | --- | --- |
+| `commitollama.background.enabled` | Enable background generation. | `true` |
+| `commitollama.background.interval` | Seconds between periodic scans. | `60` |
+| `commitollama.background.onSave` | Summarize when a file is saved. | `true` |
 
 ## Known Issues
 
-Sometimes, depending on the model used, it can generate quite long commit messages. However, it provides a good starting point for what the commit should be and can be manually edited to achieve the desired length.
+- Depending on the model, commit messages can be longer than ideal. They are meant as a starting point and can be edited before committing.
+- Some models do not support the structured JSON output Commitollama uses (for example certain reasoning or harmony-format models). If generation fails, switch to a recommended model via **Commitollama: Switch Model**. Error messages include the underlying Ollama response when available.
 
 ## Contributing
 
 - Fork the repository and create a feature branch.
-- Install dependencies: `npm install`.
-- Lint and format: `npm run lint` and `npm run format-fix`.
-- Run tests: `npm run test`.
-- Build the extension: `npm run build` (or `npm run watch`).
+- Install dependencies: `pnpm install`
+- Lint and format: `pnpm run lint` and `pnpm run format-fix`
+- Run tests: `pnpm test`
+- Build: `pnpm run build` (or `pnpm run watch`)
 - Follow the existing style and configuration (`biome.json`).
-- Open a PR against `main` with a clear description and meaningful commits (e.g., `type(scope): message`).
+- Open a PR against `main` with a clear description and meaningful commits (e.g. `type(scope): message`).
 
-[1]: https://ollama.ai/
+[1]: https://ollama.com/library
 [2]: https://raw.githubusercontent.com/jepricreations/commitollama/main/commitollama-demo.gif

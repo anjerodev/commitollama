@@ -1,8 +1,7 @@
 import * as vscode from 'vscode'
-import ollama from 'ollama'
-import { createCommitMessage, getGitExtension } from './utils'
-
+import { switchModel } from './modelSelection'
 import { BackgroundScanner } from './scheduler'
+import { createCommitMessage, getGitExtension } from './utils'
 
 export function activate(context: vscode.ExtensionContext) {
 	const scanner = new BackgroundScanner()
@@ -32,48 +31,14 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	)
 
-	const ollamaPullDisposable = vscode.commands.registerCommand(
-		'commitollama.runOllamaPull',
-		async (model: string) => {
-			vscode.window.withProgress(
-				{
-					location: vscode.ProgressLocation.Notification,
-					title: `Pulling model "${model}", this can take a while... Please be patient.`,
-					cancellable: true,
-				},
-				async (progress, token) => {
-					if (!model) {
-						vscode.window.showErrorMessage('Please provide a model name.')
-						return
-					}
+	context.subscriptions.push(createCommitDisposable)
 
-					let pullPromise = ollama.pull({ model })
-
-					token.onCancellationRequested(() => {
-						vscode.window.showInformationMessage('Model pull cancelled.')
-						pullPromise = Promise.reject('pull-cancelled')
-					})
-
-					try {
-						await pullPromise
-						vscode.window.showInformationMessage(
-							`Model "${model}" pulled successfully.`,
-						)
-					} catch (error: any) {
-						if (error === 'pull-cancelled') {
-							vscode.window.showInformationMessage('Model pull was cancelled.')
-						} else {
-							vscode.window.showErrorMessage(
-								error?.message || 'The model could not be pulled.',
-							)
-						}
-					}
-				},
-			)
-		},
+	const switchModelDisposable = vscode.commands.registerCommand(
+		'commitollama.switchModel',
+		switchModel,
 	)
 
-	context.subscriptions.push(createCommitDisposable, ollamaPullDisposable)
+	context.subscriptions.push(switchModelDisposable)
 }
 
 export function deactivate() {}

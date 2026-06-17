@@ -8,6 +8,10 @@
 	"typescript.tsc.autoDetect": "off",
 	"cSpell.words": ["commitollama", "ollama"],
 	"editor.defaultFormatter": "biomejs.biome",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "explicit"
+	},
 	"[json]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},

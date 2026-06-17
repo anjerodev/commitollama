@@ -1,6 +1,6 @@
 import * as assert from 'node:assert'
 import * as sinon from 'sinon'
-import { Ollama } from 'ollama'
+import * as ai from '../ai'
 import { SummaryCache } from '../cache'
 import { summarizeFileDiff } from '../summarizer'
 
@@ -38,41 +38,32 @@ suite('Background Scanning Tests', () => {
 	})
 
 	suite('Summarizer', () => {
-		let ollamaGenerateStub: sinon.SinonStub
+		let summarizeStub: sinon.SinonStub
 
 		setup(() => {
-			ollamaGenerateStub = sinon.stub(Ollama.prototype, 'generate')
+			summarizeStub = sinon.stub(ai.llm, 'summarize').resolves({
+				summary: 'Added new function',
+			})
 		})
 
 		teardown(() => {
-			ollamaGenerateStub.restore()
+			sinon.restore()
 		})
 
-		test('should call Ollama to summarize diff', async () => {
-			const summary = 'Added new function'
-			ollamaGenerateStub.resolves({
-				response: summary,
-			})
-
+		test('should call ai summarize for diff', async () => {
 			const diff = 'diff content'
 			const result = await summarizeFileDiff(diff)
 
-			assert.strictEqual(result, summary)
-			assert(ollamaGenerateStub.calledOnce)
-            const args = ollamaGenerateStub.firstCall.args[0];
-            assert.ok(args.prompt.includes(diff))
+			assert.strictEqual(result, 'Added new function')
+			assert.ok(summarizeStub.calledOnce)
+			const args = summarizeStub.firstCall.args[0]
+			assert.ok(args.text.includes(diff))
 		})
 
-        test('should throw error if prediction fails', async () => {
-            const error = new Error('Ollama failed')
-            ollamaGenerateStub.rejects(error)
+		test('should throw error if prediction fails', async () => {
+			summarizeStub.rejects(new Error('Ollama failed'))
 
-            try {
-                await summarizeFileDiff('diff')
-                assert.fail('Should have thrown')
-            } catch (e) {
-                assert.strictEqual(e, error)
-            }
-        })
+			await assert.rejects(() => summarizeFileDiff('diff'), /Ollama failed/)
+		})
 	})
 })

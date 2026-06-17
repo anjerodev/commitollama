@@ -3,13 +3,13 @@
 	"displayName": "commitollama",
 	"description": "AI Commits with ollama",
 	"publisher": "Commitollama",
-	"version": "2.2.0",
+	"version": "3.0.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/anjerodev/commitollama.git"
 	},
 	"engines": {
-		"vscode": "^1.106.0"
+		"vscode": "^1.120.0"
 	},
 	"categories": [
 		"Machine Learning",
@@ -17,6 +17,7 @@
 	],
 	"icon": "icon.jpg",
 	"license": "MIT",
+	"packageManager": "pnpm@9.15.9",
 	"keywords": [
 		"code",
 		"assistant",
@@ -35,8 +36,9 @@
 				"icon": "$(sparkle)"
 			},
 			{
-				"command": "commitollama.runOllamaPull",
-				"title": "Pull model from ollama"
+				"command": "commitollama.switchModel",
+				"title": "Commitollama: Switch Model",
+				"icon": "$(arrow-swap)"
 			}
 		],
 		"menus": {
@@ -44,6 +46,11 @@
 				{
 					"when": "scmProvider == git",
 					"command": "commitollama.createCommit",
+					"group": "navigation"
+				},
+				{
+					"when": "scmProvider == git",
+					"command": "commitollama.switchModel",
 					"group": "navigation"
 				}
 			]
@@ -55,17 +62,8 @@
 				"properties": {
 					"commitollama.model": {
 						"type": "string",
-						"enum": [
-							"Llama",
-							"Codegemma",
-							"Codellama",
-							"Mistral",
-							"Gemma",
-							"Qwen",
-							"Custom"
-						],
-						"description": "Specify the desired model for generating commit messages.",
-						"default": "Llama",
+						"description": "Ollama model for generating commit messages (e.g. llama3.2:latest). Set automatically on first use.",
+						"default": "llama3.2:latest",
 						"order": 0
 					},
 					"commitollama.useEmojis": {
@@ -120,11 +118,6 @@
 						"default": "{{type}} {{emoji}}: {{message}}",
 						"order": 8
 					},
-					"commitollama.custom.model": {
-						"type": "string",
-						"description": "Allows you to specify any model name. The model has to be downloaded and available on your Ollama instance. **Note:** Ignored if `commitollama.model` is not set to \"Custom\".",
-						"order": 5
-					},
 					"commitollama.custom.language": {
 						"type": "string",
 						"description": "Allows you to specify any language for the commit messages. **Note:** Ignored if `commitollama.language` is not set to \"Custom\".",
@@ -167,7 +160,7 @@
 					},
 					"commitollama.background.enabled": {
 						"type": "boolean",
-						"description": "Enable background generation of commit summaries on file save.",
+						"description": "Enable background pre-generation of commit summaries while you work (on save and on a periodic scan).",
 						"default": true,
 						"order": 16
 					},
@@ -189,33 +182,51 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run build",
-		"build": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"lint": "npx @biomejs/biome lint ./src",
-		"format": "npx @biomejs/biome format ./src",
-		"format-fix": "npx @biomejs/biome format ./src --fix",
+		"build": "node scripts/build.mjs && tsc -p ./",
+		"typecheck": "tsc -p ./",
+		"watch": "node scripts/build.mjs --watch",
+		"lint": "pnpm exec biome lint ./src",
+		"lint:fix": "pnpm exec biome check --write ./src",
+		"format": "pnpm exec biome format ./src",
+		"format-fix": "pnpm exec biome check --write ./src",
 		"test": "vscode-test",
-		"publish": "npm run build && vsce publish",
-		"publish:major": "npm run build && vsce publish major",
-		"publish:minor": "npm run build && vsce publish minor",
-		"publish:patch": "npm run build && vsce publish patch",
-		"package": "vsce package"
+		"publish": "npm run build && pnpm exec vsce publish",
+		"publish:major": "npm run build && pnpm exec vsce publish major",
+		"publish:minor": "npm run build && pnpm exec vsce publish minor",
+		"publish:patch": "npm run build && pnpm exec vsce publish patch",
+		"package": "pnpm exec vsce package --no-dependencies"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.8",
+		"@biomejs/biome": "2.5.0",
 		"@types/mocha": "10.0.10",
-		"@types/node": "24.10.2",
-		"@types/sinon": "21.0.0",
-		"@types/vscode": "1.106.1",
+		"@types/node": "25.9.3",
+		"@types/sinon": "21.0.1",
+		"@types/vscode": "1.120.0",
 		"@vscode/test-cli": "0.0.12",
-		"@vscode/test-electron": "2.5.2",
-		"esbuild": "0.27.1",
-		"mocha": "11.7.5",
-		"sinon": "21.0.0",
-		"typescript": "5.9.3"
+		"@vscode/test-electron": "3.0.0",
+		"@vscode/vsce": "3.9.2",
+		"diff": "9.0.0",
+		"esbuild": "0.28.1",
+		"mocha": "11.7.6",
+		"serialize-javascript": "7.0.5",
+		"sinon": "22.0.0",
+		"typescript": "6.0.3"
 	},
 	"dependencies": {
-		"ollama": "0.6.3"
+		"@tanstack/ai": "0.29.0",
+		"@tanstack/ai-ollama": "0.8.2",
+		"zod": "4.4.3"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@vscode/vsce-sign",
+			"esbuild",
+			"keytar"
+		],
+		"overrides": {
+			"serialize-javascript": "7.0.5",
+			"diff": "8.0.3"
+		}
 	},
 	"extensionDependencies": [
 		"vscode.git"
