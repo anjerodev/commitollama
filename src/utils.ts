@@ -1,6 +1,8 @@
+import { relative } from 'node:path'
 import * as vscode from 'vscode'
 import { summaryCache } from './cache'
 import { isLowQualitySummary } from './commitQuality'
+import { buildDiffFallbackSummary } from './diffFallback'
 import { type ChangeSummary, getCommitMessage } from './generator'
 import { ensureModelSelected } from './modelSelection'
 import { formatExtensionError, logExtensionError } from './security/log'
@@ -23,39 +25,62 @@ export function setConfig<K extends keyof ExtensionConfig>(
 		.update(key, value, vscode.ConfigurationTarget.Workspace)
 }
 
+function getRepoRelativePath(repo: Repository, uri: vscode.Uri): string {
+	const rootPath = repo.rootUri.fsPath
+	if (uri.fsPath.startsWith(rootPath)) {
+		return relative(rootPath, uri.fsPath).replace(/\\/g, '/')
+	}
+	return vscode.workspace.asRelativePath(uri, false)
+}
+
 export async function getSummaryUriDiff(
 	repo: Repository,
 	uri: vscode.Uri,
 ): Promise<string> {
-	const path = vscode.workspace.asRelativePath(uri)
+	const path = getRepoRelativePath(repo, uri)
 	return repo.diffIndexWithHEAD(path)
+}
+
+async function resolveSummary(
+	file: string,
+	cacheKey: string,
+	diff: string,
+	diffHash: string,
+): Promise<string> {
+	const cached = summaryCache.get(cacheKey)
+	if (cached?.diffHash === diffHash && !isLowQualitySummary(cached.summary)) {
+		return cached.summary
+	}
+
+	try {
+		const summary = await summarizeFileDiff(diff)
+		if (!isLowQualitySummary(summary)) {
+			summaryCache.set(cacheKey, diffHash, summary)
+			return summary
+		}
+	} catch (error) {
+		logExtensionError('summarizeStagedChange', error)
+	}
+
+	return buildDiffFallbackSummary(file, diff)
 }
 
 async function summarizeStagedChange(
 	repo: Repository,
 	uri: vscode.Uri,
 ): Promise<ChangeSummary | null> {
-	const path = vscode.workspace.asRelativePath(uri)
+	const path = getRepoRelativePath(repo, uri)
 	const diff = await repo.diffIndexWithHEAD(path)
 	if (!diff || diff.trim() === '') {
 		return null
 	}
 
-	const hash = summaryCache.computeHash(diff)
-	const cached = summaryCache.get(uri.fsPath)
-
-	let summary: string
-	if (cached && cached.diffHash === hash) {
-		summary = cached.summary
-	} else {
-		summary = await summarizeFileDiff(diff)
-		summaryCache.set(uri.fsPath, hash, summary)
-	}
-
-	if (isLowQualitySummary(summary)) {
-		return null
-	}
-
+	const summary = await resolveSummary(
+		path,
+		uri.fsPath,
+		diff,
+		summaryCache.computeHash(diff),
+	)
 	return { file: path, summary }
 }
 
@@ -95,13 +120,16 @@ export async function createCommitMessage(repo: Repository) {
 				if (summaries.length === 0) {
 					const fullDiff = await repo.diff(true)
 					if (fullDiff?.trim()) {
-						const summary = await summarizeFileDiff(fullDiff)
-						if (!isLowQualitySummary(summary)) {
-							summaries.push({
-								file: 'staged changes',
-								summary,
-							})
-						}
+						const summary = await resolveSummary(
+							'staged changes',
+							'staged changes',
+							fullDiff,
+							summaryCache.computeHash(fullDiff),
+						)
+						summaries.push({
+							file: 'staged changes',
+							summary,
+						})
 					}
 				}
 
