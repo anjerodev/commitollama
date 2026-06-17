@@ -28,6 +28,9 @@
 	],
 	"main": "./out/extension.js",
 	"activationEvents": [],
+	"vsce": {
+		"dependencies": false
+	},
 	"contributes": {
 		"commands": [
 			{
@@ -181,7 +184,7 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run build",
+		"vscode:prepublish": "pnpm run build",
 		"build": "node scripts/build.mjs && tsc -p ./",
 		"typecheck": "tsc -p ./",
 		"watch": "node scripts/build.mjs --watch",
@@ -190,14 +193,16 @@
 		"format": "pnpm exec biome format ./src",
 		"format-fix": "pnpm exec biome check --write ./src",
 		"test": "vscode-test",
-		"publish": "npm run build && pnpm exec vsce publish",
-		"publish:major": "npm run build && pnpm exec vsce publish major",
-		"publish:minor": "npm run build && pnpm exec vsce publish minor",
-		"publish:patch": "npm run build && pnpm exec vsce publish patch",
+		"publish": "pnpm run build && pnpm exec vsce publish --no-dependencies",
+		"publish:major": "pnpm run build && pnpm exec vsce publish major --no-dependencies",
+		"publish:minor": "pnpm run build && pnpm exec vsce publish minor --no-dependencies",
+		"publish:patch": "pnpm run build && pnpm exec vsce publish patch --no-dependencies",
 		"package": "pnpm exec vsce package --no-dependencies"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",
+		"@tanstack/ai": "0.29.0",
+		"@tanstack/ai-ollama": "0.8.2",
 		"@types/mocha": "10.0.10",
 		"@types/node": "25.9.3",
 		"@types/sinon": "21.0.1",
@@ -210,11 +215,7 @@
 		"mocha": "11.7.6",
 		"serialize-javascript": "7.0.5",
 		"sinon": "22.0.0",
-		"typescript": "6.0.3"
-	},
-	"dependencies": {
-		"@tanstack/ai": "0.29.0",
-		"@tanstack/ai-ollama": "0.8.2",
+		"typescript": "6.0.3",
 		"zod": "4.4.3"
 	},
 	"pnpm": {

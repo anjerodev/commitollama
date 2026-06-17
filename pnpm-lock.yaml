@@ -11,20 +11,16 @@ overrides:
 importers:
 
   .:
-    dependencies:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.5.0
+        version: 2.5.0
       '@tanstack/ai':
         specifier: 0.29.0
         version: 0.29.0
       '@tanstack/ai-ollama':
         specifier: 0.8.2
         version: 0.8.2(@tanstack/ai@0.29.0)
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 2.5.0
-        version: 2.5.0
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
@@ -64,6 +60,9 @@ importers:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
 packages:
 
