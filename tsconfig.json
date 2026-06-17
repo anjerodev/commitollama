@@ -3,6 +3,7 @@
 		"module": "commonjs",
 		"target": "ES2021",
 		"lib": ["ES2021", "DOM"],
+		"typeRoots": ["./node_modules/@types"],
 		"types": ["node", "mocha"],
 		"skipLibCheck": true,
 		"noEmit": true,
