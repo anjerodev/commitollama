@@ -201,8 +201,8 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",
-		"@tanstack/ai": "0.29.0",
-		"@tanstack/ai-ollama": "0.8.2",
+		"@tanstack/ai": "0.32.0",
+		"@tanstack/ai-ollama": "0.8.5",
 		"@types/mocha": "10.0.10",
 		"@types/node": "25.9.3",
 		"@types/sinon": "21.0.1",

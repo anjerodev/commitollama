@@ -16,11 +16,11 @@ importers:
         specifier: 2.5.0
         version: 2.5.0
       '@tanstack/ai':
-        specifier: 0.29.0
-        version: 0.29.0
+        specifier: 0.32.0
+        version: 0.32.0
       '@tanstack/ai-ollama':
-        specifier: 0.8.2
-        version: 0.8.2(@tanstack/ai@0.29.0)
+        specifier: 0.8.5
+        version: 0.8.5(@tanstack/ai@0.32.0)
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
@@ -435,21 +435,21 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tanstack/ai-event-client@0.6.0':
-    resolution: {integrity: sha512-8ZqQo0JiRwZ0letOZ/KrOCd8kpPG2K0iWGfaPjjt+S2AtglRwUJ/TlQDhBW8R5m296Pywp1G3Bdf0n3cP2njoA==}
+  '@tanstack/ai-event-client@0.6.3':
+    resolution: {integrity: sha512-aQb+v9a4T+uDS3VuDGKOdhwPvr2iwjHVweroXHwbasmvClFqV6WJhoekv74VJrhJrlwz8wVMEPcwlKHxnSAzLQ==}
     peerDependencies:
-      '@tanstack/ai': 0.29.0
+      '@tanstack/ai': 0.32.0
 
-  '@tanstack/ai-ollama@0.8.2':
-    resolution: {integrity: sha512-OGcY/5UA8Y5sraLjdkH3Ksa4TKM7Inw2pYsacMqNqMWkrYp5L7rdoRZ8HMBKE3i5ZmbLWZeeSvANSvNDish/9Q==}
+  '@tanstack/ai-ollama@0.8.5':
+    resolution: {integrity: sha512-XzNRnIlFhtAifdoWVlzV/7tqnfnwuk48QJcFk7/AkuEw+3s8iRHrNw+XKraOI+uc/WkK1Z2RqHVIqj1uzEmIRw==}
     peerDependencies:
-      '@tanstack/ai': ^0.29.0
+      '@tanstack/ai': ^0.32.0
 
-  '@tanstack/ai-utils@0.2.1':
-    resolution: {integrity: sha512-cFsSeaiAOOEtAOWvFWD0jHiLlFSYi+FYmbEPeD70zHntM8ws2YFb4Dgz94+J8rsoffLXIFTkKswTowx5QlTsWg==}
+  '@tanstack/ai-utils@0.2.2':
+    resolution: {integrity: sha512-QZNgbhoPhh5snlMf21SuF4QNTJme4aldvBx2ppMefqfMQHBQPFDJl6TxHDNW8voIzQe42rE5U9XfoWrS0K/xFQ==}
 
-  '@tanstack/ai@0.29.0':
-    resolution: {integrity: sha512-BnwFuQ3yFPg4oANMuTFh58aKyQU+KQKr6L0EMmJzuum/9X8Q1DM4cO/tkpxtW959fvnH6Pm7Q7BSge48b+LapQ==}
+  '@tanstack/ai@0.32.0':
+    resolution: {integrity: sha512-8Saiyws4irNkxPcyLOucquYaEFEGUVBCrBJmfr1W6z1oDVDYF+pwb31rOLjN0/xqbGCHzjOaXc4TLAZS3kPS4g==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': '>=1.9.0'
@@ -457,8 +457,8 @@ packages:
       '@opentelemetry/api':
         optional: true
 
-  '@tanstack/devtools-event-client@0.4.3':
-    resolution: {integrity: sha512-OZI6QyULw0FI0wjgmeYzCIfbgPsOEzwJtCpa69XrfLMtNXLGnz3d/dIabk7frg0TmHo+Ah49w5I4KC7Tufwsvw==}
+  '@tanstack/devtools-event-client@0.4.4':
+    resolution: {integrity: sha512-6T5Yop/793YI+H+5J8Hsyj4kCih9sl4t3ElLgKioW5hk3ocn+ZdSJ94tT7vL7uabxSugWYBZlOTMPzEw2puvQw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2188,27 +2188,27 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tanstack/ai-event-client@0.6.0(@tanstack/ai@0.29.0)':
+  '@tanstack/ai-event-client@0.6.3(@tanstack/ai@0.32.0)':
     dependencies:
-      '@tanstack/ai': 0.29.0
-      '@tanstack/devtools-event-client': 0.4.3
+      '@tanstack/ai': 0.32.0
+      '@tanstack/devtools-event-client': 0.4.4
 
-  '@tanstack/ai-ollama@0.8.2(@tanstack/ai@0.29.0)':
+  '@tanstack/ai-ollama@0.8.5(@tanstack/ai@0.32.0)':
     dependencies:
-      '@tanstack/ai': 0.29.0
-      '@tanstack/ai-utils': 0.2.1
+      '@tanstack/ai': 0.32.0
+      '@tanstack/ai-utils': 0.2.2
       ollama: 0.6.3
 
-  '@tanstack/ai-utils@0.2.1': {}
+  '@tanstack/ai-utils@0.2.2': {}
 
-  '@tanstack/ai@0.29.0':
+  '@tanstack/ai@0.32.0':
     dependencies:
       '@ag-ui/core': 0.0.52
       '@standard-schema/spec': 1.1.0
-      '@tanstack/ai-event-client': 0.6.0(@tanstack/ai@0.29.0)
+      '@tanstack/ai-event-client': 0.6.3(@tanstack/ai@0.32.0)
       partial-json: 0.1.7
 
-  '@tanstack/devtools-event-client@0.4.3': {}
+  '@tanstack/devtools-event-client@0.4.4': {}
 
   '@textlint/ast-node-types@15.7.1': {}
 
