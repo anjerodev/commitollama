@@ -213,7 +213,7 @@
 		"diff": "9.0.0",
 		"esbuild": "0.28.1",
 		"mocha": "11.7.6",
-		"serialize-javascript": "7.0.5",
+		"serialize-javascript": "7.0.6",
 		"sinon": "22.0.0",
 		"typescript": "6.0.3",
 		"zod": "4.4.3"
@@ -225,7 +225,7 @@
 			"keytar"
 		],
 		"overrides": {
-			"serialize-javascript": "7.0.5",
+			"serialize-javascript": "7.0.6",
 			"diff": "8.0.3"
 		}
 	},
