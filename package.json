@@ -17,7 +17,7 @@
 	],
 	"icon": "icon.jpg",
 	"license": "MIT",
-	"packageManager": "pnpm@9.15.9",
+	"packageManager": "pnpm@11.20.0",
 	"keywords": [
 		"code",
 		"assistant",
@@ -192,7 +192,7 @@
 		"lint:fix": "pnpm exec biome check --write ./src",
 		"format": "pnpm exec biome format ./src",
 		"format-fix": "pnpm exec biome check --write ./src",
-		"test": "vscode-test",
+		"test": "pnpm run build && vscode-test",
 		"publish": "pnpm run build && pnpm exec vsce publish --no-dependencies",
 		"publish:major": "pnpm run build && pnpm exec vsce publish major --no-dependencies",
 		"publish:minor": "pnpm run build && pnpm exec vsce publish minor --no-dependencies",
@@ -200,22 +200,22 @@
 		"package": "pnpm exec vsce package --no-dependencies"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.0",
-		"@tanstack/ai": "0.29.0",
-		"@tanstack/ai-ollama": "0.8.2",
+		"@biomejs/biome": "2.5.7",
+		"@tanstack/ai": "0.43.1",
+		"@tanstack/ai-ollama": "0.8.17",
 		"@types/mocha": "10.0.10",
-		"@types/node": "25.9.3",
-		"@types/sinon": "21.0.1",
-		"@types/vscode": "1.120.0",
-		"@vscode/test-cli": "0.0.12",
-		"@vscode/test-electron": "3.0.0",
+		"@types/node": "26.1.2",
+		"@types/sinon": "22.0.0",
+		"@types/vscode": "1.125.0",
+		"@vscode/test-cli": "0.0.15",
+		"@vscode/test-electron": "3.1.0",
 		"@vscode/vsce": "3.9.2",
 		"diff": "9.0.0",
 		"esbuild": "0.28.1",
-		"mocha": "11.7.6",
-		"serialize-javascript": "7.0.5",
-		"sinon": "22.0.0",
-		"typescript": "6.0.3",
+		"mocha": "11.8.0",
+		"serialize-javascript": "7.0.7",
+		"sinon": "22.1.0",
+		"typescript": "7.0.2",
 		"zod": "4.4.3"
 	},
 	"pnpm": {
@@ -225,8 +225,8 @@
 			"keytar"
 		],
 		"overrides": {
-			"serialize-javascript": "7.0.5",
-			"diff": "8.0.3"
+			"serialize-javascript": "7.0.7",
+			"diff": "9.0.0"
 		}
 	},
 	"extensionDependencies": [

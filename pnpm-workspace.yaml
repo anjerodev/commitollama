@@ -1,0 +1,6 @@
+allowBuilds:
+  '@vscode/vsce-sign': true
+  esbuild: true
+  keytar: true
+minimumReleaseAgeExclude:
+  - '@tanstack/ai@0.43.1'
