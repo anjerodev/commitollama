@@ -4,3 +4,6 @@ allowBuilds:
   keytar: true
 minimumReleaseAgeExclude:
   - '@tanstack/ai@0.43.1'
+overrides:
+  serialize-javascript: 7.0.7
+  diff: 9.0.0
