@@ -211,7 +211,7 @@
 		"@vscode/test-electron": "3.1.0",
 		"@vscode/vsce": "3.9.2",
 		"diff": "9.0.0",
-		"esbuild": "0.28.1",
+		"esbuild": "0.28.2",
 		"mocha": "11.8.0",
 		"serialize-javascript": "7.0.7",
 		"sinon": "22.1.0",
