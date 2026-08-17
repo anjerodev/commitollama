@@ -213,7 +213,7 @@
 		"diff": "9.0.0",
 		"esbuild": "0.28.1",
 		"mocha": "11.8.0",
-		"serialize-javascript": "7.0.7",
+		"serialize-javascript": "7.1.0",
 		"sinon": "22.1.0",
 		"typescript": "7.0.2",
 		"zod": "4.4.3"
