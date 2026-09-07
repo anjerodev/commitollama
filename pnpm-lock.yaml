@@ -31,8 +31,8 @@ importers:
         specifier: 22.0.0
         version: 22.0.0
       '@types/vscode':
-        specifier: 1.125.0
-        version: 1.125.0
+        specifier: 1.136.0
+        version: 1.136.0
       '@vscode/test-cli':
         specifier: 0.0.15
         version: 0.0.15
@@ -506,8 +506,8 @@ packages:
   '@types/sinonjs__fake-timers@15.0.1':
     resolution: {integrity: sha512-Ko2tjWJq8oozHzHV+reuvS5KYIRAokHnGbDwGh/J64LntgpbuylF74ipEL24HCyRjf9FOlBiBHWBR1RlVKsI1w==}
 
-  '@types/vscode@1.125.0':
-    resolution: {integrity: sha512-0icm/ZQAaism87P0ekHqi4/Ju9du+Tm0RUW+y7vqRsxY2cY0FNRX1nAnaW7nT6npPt2tfHiheZ55Zm9UhqonFA==}
+  '@types/vscode@1.136.0':
+    resolution: {integrity: sha512-DO746VAfnHk8+Y8CsUKYMm2rjWD0mxEuYBZI+ssaqJY7yvLJPf9lcwxSSz9W60gbdvdcGyvHQxHTyByfF9mVqg==}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
@@ -2382,7 +2382,7 @@ snapshots:
 
   '@types/sinonjs__fake-timers@15.0.1': {}
 
-  '@types/vscode@1.125.0': {}
+  '@types/vscode@1.136.0': {}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
