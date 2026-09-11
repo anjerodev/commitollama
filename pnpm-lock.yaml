@@ -16,11 +16,11 @@ importers:
         specifier: 2.5.12
         version: 2.5.12
       '@tanstack/ai':
-        specifier: 0.51.0
-        version: 0.51.0(zod@4.5.4)
+        specifier: 0.53.0
+        version: 0.53.0(zod@4.5.4)
       '@tanstack/ai-ollama':
-        specifier: 0.10.2
-        version: 0.10.2(@tanstack/ai@0.51.0(zod@4.5.4))
+        specifier: 0.11.1
+        version: 0.11.1(@tanstack/ai@0.53.0(zod@4.5.4))
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
@@ -444,19 +444,19 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tanstack/ai-event-client@0.11.3':
-    resolution: {integrity: sha512-K5Nw05TG2NPJNunV7LI/5m7S97XHHdxN7vwTYcbKbmA5txlToaiF4wCfYBT406m7BOeGlLHZJpr3m1M6Vaai4g==}
+  '@tanstack/ai-event-client@0.11.2':
+    resolution: {integrity: sha512-SlBC0jzlsjcdwYZqbvd7Wjny7GkGJGOZepHyJShDsfaiFNFUzGSP4SjOwV49YPfKwsFmR8hX67jQtBAmsnZWqQ==}
 
-  '@tanstack/ai-ollama@0.10.2':
-    resolution: {integrity: sha512-4bCTsj0VHJ9Zak7yHbaT7lcfZ+xUCz2u+GeJN3K8le8Mh9cr01Wrr7ojAR74CbdQPaMqJELCYdpE+sQ/OwTEQw==}
+  '@tanstack/ai-ollama@0.11.1':
+    resolution: {integrity: sha512-HbxgI2VgWf/eJ7edajr3lKotGHpreVPvPdQ9mnV/N7rv22KIAQN75Uf0xIqAr7379fF1l3XPu1Kj/a7zbdxZzw==}
     peerDependencies:
-      '@tanstack/ai': ^0.51.0
+      '@tanstack/ai': ^0.53.0
 
   '@tanstack/ai-utils@0.4.0':
     resolution: {integrity: sha512-xqvAgPJkIuGk1m+jZKyb7vBTQIaBmUD9EVzlPkDWWMp80n69uwL0TnBZCVk+OwL9goTQiFy648dnBfLsiJgl6A==}
 
-  '@tanstack/ai@0.51.0':
-    resolution: {integrity: sha512-tEaDXXF8C5daQ8ruu1vep6DktHDF3FFdnX9ivfw4zk1Hh/2L+IhoKVYlGad85Wjy7BSBhb6xzkUWyhX/b+0kyw==}
+  '@tanstack/ai@0.53.0':
+    resolution: {integrity: sha512-a4zDqb7SU0PU+pua69y5IDKLHO9dsD99vMIrzKNfcJyzJ81aASIkbrXXcD4n15YOj+FaWPZmD4Qewmd+5IV4Iw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': '>=1.9.0'
@@ -2312,23 +2312,23 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tanstack/ai-event-client@0.11.3':
+  '@tanstack/ai-event-client@0.11.2':
     dependencies:
       '@tanstack/devtools-event-client': 0.4.4
 
-  '@tanstack/ai-ollama@0.10.2(@tanstack/ai@0.51.0(zod@4.5.4))':
+  '@tanstack/ai-ollama@0.11.1(@tanstack/ai@0.53.0(zod@4.5.4))':
     dependencies:
-      '@tanstack/ai': 0.51.0(zod@4.5.4)
+      '@tanstack/ai': 0.53.0(zod@4.5.4)
       '@tanstack/ai-utils': 0.4.0
       ollama: 0.6.3
 
   '@tanstack/ai-utils@0.4.0': {}
 
-  '@tanstack/ai@0.51.0(zod@4.5.4)':
+  '@tanstack/ai@0.53.0(zod@4.5.4)':
     dependencies:
       '@ag-ui/core': 0.1.1-canary.beta.0(zod@4.5.4)
       '@standard-schema/spec': 1.1.0
-      '@tanstack/ai-event-client': 0.11.3
+      '@tanstack/ai-event-client': 0.11.2
       '@tanstack/ai-utils': 0.4.0
       partial-json: 0.1.7
     transitivePeerDependencies:
