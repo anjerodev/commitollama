@@ -16,17 +16,17 @@ importers:
         specifier: 2.5.12
         version: 2.5.12
       '@tanstack/ai':
-        specifier: 0.51.0
-        version: 0.51.0(zod@4.5.4)
+        specifier: 0.53.0
+        version: 0.53.0(zod@4.5.4)
       '@tanstack/ai-ollama':
-        specifier: 0.10.2
-        version: 0.10.2(@tanstack/ai@0.51.0(zod@4.5.4))
+        specifier: 0.11.1
+        version: 0.11.1(@tanstack/ai@0.53.0(zod@4.5.4))
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: 26.4.1
-        version: 26.4.1
+        specifier: 26.5.0
+        version: 26.5.0
       '@types/sinon':
         specifier: 22.0.0
         version: 22.0.0
@@ -447,16 +447,16 @@ packages:
   '@tanstack/ai-event-client@0.11.3':
     resolution: {integrity: sha512-K5Nw05TG2NPJNunV7LI/5m7S97XHHdxN7vwTYcbKbmA5txlToaiF4wCfYBT406m7BOeGlLHZJpr3m1M6Vaai4g==}
 
-  '@tanstack/ai-ollama@0.10.2':
-    resolution: {integrity: sha512-4bCTsj0VHJ9Zak7yHbaT7lcfZ+xUCz2u+GeJN3K8le8Mh9cr01Wrr7ojAR74CbdQPaMqJELCYdpE+sQ/OwTEQw==}
+  '@tanstack/ai-ollama@0.11.1':
+    resolution: {integrity: sha512-HbxgI2VgWf/eJ7edajr3lKotGHpreVPvPdQ9mnV/N7rv22KIAQN75Uf0xIqAr7379fF1l3XPu1Kj/a7zbdxZzw==}
     peerDependencies:
-      '@tanstack/ai': ^0.51.0
+      '@tanstack/ai': ^0.53.0
 
   '@tanstack/ai-utils@0.4.0':
     resolution: {integrity: sha512-xqvAgPJkIuGk1m+jZKyb7vBTQIaBmUD9EVzlPkDWWMp80n69uwL0TnBZCVk+OwL9goTQiFy648dnBfLsiJgl6A==}
 
-  '@tanstack/ai@0.51.0':
-    resolution: {integrity: sha512-tEaDXXF8C5daQ8ruu1vep6DktHDF3FFdnX9ivfw4zk1Hh/2L+IhoKVYlGad85Wjy7BSBhb6xzkUWyhX/b+0kyw==}
+  '@tanstack/ai@0.53.0':
+    resolution: {integrity: sha512-a4zDqb7SU0PU+pua69y5IDKLHO9dsD99vMIrzKNfcJyzJ81aASIkbrXXcD4n15YOj+FaWPZmD4Qewmd+5IV4Iw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': '>=1.9.0'
@@ -491,8 +491,8 @@ packages:
   '@types/mocha@10.0.10':
     resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
-  '@types/node@26.4.1':
-    resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
+  '@types/node@26.5.0':
+    resolution: {integrity: sha512-dVSGpriSoCgz8WnDNTuSSuSv1PC/ALXihO4ulRZt7Md8k9mlbdin3lGOcDE8SnWOgf513ByWlXd7BK4azmyg/A==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -1845,8 +1845,8 @@ packages:
   underscore@1.13.8:
     resolution: {integrity: sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ==}
 
-  undici-types@8.3.0:
-    resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
+  undici-types@8.9.0:
+    resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
   undici@7.29.0:
     resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
@@ -2316,15 +2316,15 @@ snapshots:
     dependencies:
       '@tanstack/devtools-event-client': 0.4.4
 
-  '@tanstack/ai-ollama@0.10.2(@tanstack/ai@0.51.0(zod@4.5.4))':
+  '@tanstack/ai-ollama@0.11.1(@tanstack/ai@0.53.0(zod@4.5.4))':
     dependencies:
-      '@tanstack/ai': 0.51.0(zod@4.5.4)
+      '@tanstack/ai': 0.53.0(zod@4.5.4)
       '@tanstack/ai-utils': 0.4.0
       ollama: 0.6.3
 
   '@tanstack/ai-utils@0.4.0': {}
 
-  '@tanstack/ai@0.51.0(zod@4.5.4)':
+  '@tanstack/ai@0.53.0(zod@4.5.4)':
     dependencies:
       '@ag-ui/core': 0.1.1-canary.beta.0(zod@4.5.4)
       '@standard-schema/spec': 1.1.0
@@ -2368,9 +2368,9 @@ snapshots:
 
   '@types/mocha@10.0.10': {}
 
-  '@types/node@26.4.1':
+  '@types/node@26.5.0':
     dependencies:
-      undici-types: 8.3.0
+      undici-types: 8.9.0
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -3810,7 +3810,7 @@ snapshots:
 
   underscore@1.13.8: {}
 
-  undici-types@8.3.0: {}
+  undici-types@8.9.0: {}
 
   undici@7.29.0: {}
 
