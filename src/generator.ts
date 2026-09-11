@@ -61,6 +61,30 @@ function formatChangeSummaries(summaries: ChangeSummary[]): string {
 		.join('\n')
 }
 
+/** Normalize HEAD name for prompts; undefined when detached/unnamed. */
+export function normalizeBranchName(
+	branchName?: string | null,
+): string | undefined {
+	const trimmed = branchName?.trim()
+	return trimmed ? trimmed : undefined
+}
+
+export function buildCommitUserContent(
+	summaries: ChangeSummary[],
+	branchName?: string | null,
+): string {
+	const wrappedSummaries = wrapUntrustedContent(
+		'summaries',
+		formatChangeSummaries(summaries),
+	)
+	const normalizedBranch = normalizeBranchName(branchName)
+	const branchSection = normalizedBranch
+		? `Current git branch (optional context only; may inform ticket or feature naming but must not invent changes):\n${wrapUntrustedContent('branch', normalizedBranch)}\n\n`
+		: 'Current git branch: detached HEAD or unnamed (optional context only).\n\n'
+
+	return `${branchSection}Staged change summaries:\n${wrappedSummaries}`
+}
+
 function buildStructuredPrompt(options: {
 	typeRules: string
 	commitMessageRules: string
@@ -96,6 +120,8 @@ function buildStructuredPrompt(options: {
 	- Describe only what is present in the change summaries
 	- Never say the commit is empty, has no changes, or that input is missing
 	- Do not invent files, features, or changes that are not in the summaries
+	- You may use the current branch name as optional context (for example ticket IDs)
+	- Never invent work from the branch name alone; ground the message in the change summaries
 
 	${useDescription ? descriptionPrompt : ''}
 	Respond using JSON`
@@ -109,7 +135,10 @@ function buildStructuredPrompt(options: {
 
 async function requestStructuredCommit(
 	summaries: ChangeSummary[],
-	extraInstruction?: string,
+	options?: {
+		extraInstruction?: string
+		branchName?: string | null
+	},
 ): Promise<CommitStructure> {
 	const {
 		promptTemperature,
@@ -150,13 +179,9 @@ async function requestStructuredCommit(
 		useDescription,
 		descriptionPrompt,
 		customPrompt,
-		extraInstruction,
+		extraInstruction: options?.extraInstruction,
 	})
 
-	const wrappedSummaries = wrapUntrustedContent(
-		'summaries',
-		formatChangeSummaries(summaries),
-	)
 	const outputSchema = buildCommitSchema(useDescription, language)
 
 	const result = await ai.chat({
@@ -165,7 +190,7 @@ async function requestStructuredCommit(
 		messages: [
 			{
 				role: 'user',
-				content: `Staged change summaries:\n${wrappedSummaries}`,
+				content: buildCommitUserContent(summaries, options?.branchName),
 			},
 		],
 		outputSchema,
@@ -183,15 +208,17 @@ async function requestStructuredCommit(
 
 export async function generateStructuredCommit(
 	summaries: ChangeSummary[],
+	branchName?: string | null,
 ): Promise<CommitStructure> {
 	try {
-		let commit = await requestStructuredCommit(summaries)
+		let commit = await requestStructuredCommit(summaries, { branchName })
 
 		if (isLowQualityCommit(commit.message, commit.type)) {
-			commit = await requestStructuredCommit(
-				summaries,
-				'The previous response was invalid because it did not describe the staged changes. Use the summaries exactly and describe the real code changes.',
-			)
+			commit = await requestStructuredCommit(summaries, {
+				branchName,
+				extraInstruction:
+					'The previous response was invalid because it did not describe the staged changes. Use the summaries exactly and describe the real code changes.',
+			})
 		}
 
 		if (isLowQualityCommit(commit.message, commit.type)) {
@@ -235,7 +262,10 @@ export async function generateStructuredCommit(
 	}
 }
 
-export async function getCommitMessage(summaries: ChangeSummary[]) {
+export async function getCommitMessage(
+	summaries: ChangeSummary[],
+	branchName?: string | null,
+) {
 	const {
 		useDescription,
 		useEmojis,
@@ -244,7 +274,10 @@ export async function getCommitMessage(summaries: ChangeSummary[]) {
 		commitTemplate,
 	} = config.inference
 
-	const structuredCommit = await generateStructuredCommit(summaries)
+	const structuredCommit = await generateStructuredCommit(
+		summaries,
+		branchName,
+	)
 
 	const { type, message, summary } = structuredCommit
 
