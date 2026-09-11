@@ -139,7 +139,8 @@ export async function createCommitMessage(repo: Repository) {
 					)
 				}
 
-				const commitMessage = await getCommitMessage(summaries)
+				const branchName = repo.state.HEAD?.name
+				const commitMessage = await getCommitMessage(summaries, branchName)
 				repo.inputBox.value = commitMessage
 			} catch (error: unknown) {
 				logExtensionError('createCommitMessage', error)

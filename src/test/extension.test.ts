@@ -5,7 +5,12 @@ import * as ai from '../ai'
 import { defaultConfig } from '../config'
 import * as extension from '../extension'
 import type { ChangeSummary } from '../generator'
-import { generateStructuredCommit, getCommitMessage } from '../generator'
+import {
+	buildCommitUserContent,
+	generateStructuredCommit,
+	getCommitMessage,
+	normalizeBranchName,
+} from '../generator'
 import { getConfig, getGitExtension, setConfig } from '../utils'
 
 suite('Extension Test Suite', () => {
@@ -120,6 +125,49 @@ suite('generateStructuredCommit Tests', () => {
 			/Switch Model/,
 		)
 	})
+
+	test('Should include current branch name in the chat user content', async () => {
+		await generateStructuredCommit(summariesSample, 'feature/ABC-123-login')
+
+		const chatArgs = chatStub.firstCall.args[0]
+		const userContent = chatArgs.messages[0].content as string
+		const systemPrompt = chatArgs.systemPrompts[0] as string
+
+		assert.ok(userContent.includes('feature/ABC-123-login'))
+		assert.ok(userContent.includes('<untrusted_branch>'))
+		assert.ok(userContent.includes('Staged change summaries:'))
+		assert.ok(systemPrompt.includes('current branch name as optional context'))
+	})
+
+	test('Should describe detached HEAD when branch name is missing', async () => {
+		await generateStructuredCommit(summariesSample)
+
+		const userContent = chatStub.firstCall.args[0].messages[0].content as string
+		assert.ok(userContent.includes('detached HEAD or unnamed'))
+		assert.ok(!userContent.includes('<untrusted_branch>'))
+	})
+})
+
+suite('branch context helpers', () => {
+	test('normalizeBranchName trims and drops empty values', () => {
+		assert.strictEqual(normalizeBranchName('  feat/x  '), 'feat/x')
+		assert.strictEqual(normalizeBranchName(''), undefined)
+		assert.strictEqual(normalizeBranchName('   '), undefined)
+		assert.strictEqual(normalizeBranchName(null), undefined)
+		assert.strictEqual(normalizeBranchName(undefined), undefined)
+	})
+
+	test('buildCommitUserContent wraps branch as untrusted content', () => {
+		const content = buildCommitUserContent(
+			[{ file: 'a.ts', summary: 'Added a' }],
+			'fix/42-thing',
+		)
+
+		assert.ok(content.includes('<untrusted_branch>'))
+		assert.ok(content.includes('fix/42-thing'))
+		assert.ok(content.includes('<untrusted_summaries>'))
+		assert.ok(content.includes('- a.ts: Added a'))
+	})
 })
 
 suite('getCommitMessage Tests', () => {
@@ -164,6 +212,17 @@ suite('getCommitMessage Tests', () => {
 
 		assert.strictEqual(result, 'feat: Add new feature')
 		assert.ok(chatStub.calledOnce)
+	})
+
+	test('Should pass branch name through to the model request', async () => {
+		const result = await getCommitMessage(
+			summariesSample,
+			'bugfix/ISSUE-9',
+		)
+
+		assert.strictEqual(result, 'feat: Add new feature')
+		const userContent = chatStub.firstCall.args[0].messages[0].content as string
+		assert.ok(userContent.includes('bugfix/ISSUE-9'))
 	})
 
 	test('Should add emojis if configured to use emojis', async () => {
