@@ -17,10 +17,10 @@ importers:
         version: 2.5.12
       '@tanstack/ai':
         specifier: 0.53.0
-        version: 0.53.0(zod@4.5.4)
+        version: 0.53.0(zod@4.6.2)
       '@tanstack/ai-ollama':
         specifier: 0.11.1
-        version: 0.11.1(@tanstack/ai@0.53.0(zod@4.5.4))
+        version: 0.11.1(@tanstack/ai@0.53.0(zod@4.6.2))
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
@@ -61,8 +61,8 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
       zod:
-        specifier: 4.5.4
-        version: 4.5.4
+        specifier: 4.6.2
+        version: 4.6.2
 
 packages:
 
@@ -1966,14 +1966,14 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.5.4:
-    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
+  zod@4.6.2:
+    resolution: {integrity: sha512-lh5RCAGFa1Cm2hjtNwLQhSs/AsqdWnTQaBER9fEwN/88pSh7KOtJavtBx/0VlkN/uFd61SwYmljLMDAsHlvzBQ==}
 
 snapshots:
 
-  '@ag-ui/core@0.1.1-canary.beta.0(zod@4.5.4)':
+  '@ag-ui/core@0.1.1-canary.beta.0(zod@4.6.2)':
     optionalDependencies:
-      zod: 4.5.4
+      zod: 4.6.2
 
   '@azu/format-text@1.0.2': {}
 
@@ -2316,17 +2316,17 @@ snapshots:
     dependencies:
       '@tanstack/devtools-event-client': 0.4.4
 
-  '@tanstack/ai-ollama@0.11.1(@tanstack/ai@0.53.0(zod@4.5.4))':
+  '@tanstack/ai-ollama@0.11.1(@tanstack/ai@0.53.0(zod@4.6.2))':
     dependencies:
-      '@tanstack/ai': 0.53.0(zod@4.5.4)
+      '@tanstack/ai': 0.53.0(zod@4.6.2)
       '@tanstack/ai-utils': 0.4.0
       ollama: 0.6.3
 
   '@tanstack/ai-utils@0.4.0': {}
 
-  '@tanstack/ai@0.53.0(zod@4.5.4)':
+  '@tanstack/ai@0.53.0(zod@4.6.2)':
     dependencies:
-      '@ag-ui/core': 0.1.1-canary.beta.0(zod@4.5.4)
+      '@ag-ui/core': 0.1.1-canary.beta.0(zod@4.6.2)
       '@standard-schema/spec': 1.1.0
       '@tanstack/ai-event-client': 0.11.3
       '@tanstack/ai-utils': 0.4.0
@@ -3927,4 +3927,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.5.4: {}
+  zod@4.6.2: {}
