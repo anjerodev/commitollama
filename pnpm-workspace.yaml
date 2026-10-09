@@ -3,5 +3,5 @@ allowBuilds:
   esbuild: true
   keytar: true
 overrides:
-  serialize-javascript: 7.1.0
+  serialize-javascript: 7.1.2
   diff: 9.0.0
