@@ -9,7 +9,7 @@
 		"url": "https://github.com/anjerodev/commitollama.git"
 	},
 	"engines": {
-		"vscode": "^1.136.0"
+		"vscode": "^1.140.0"
 	},
 	"categories": [
 		"Machine Learning",
@@ -200,23 +200,23 @@
 		"package": "pnpm exec vsce package --no-dependencies"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.12",
-		"@tanstack/ai": "0.53.0",
-		"@tanstack/ai-ollama": "0.11.1",
+		"@biomejs/biome": "2.5.15",
+		"@tanstack/ai": "0.65.1",
+		"@tanstack/ai-ollama": "0.11.13",
 		"@types/mocha": "10.0.10",
-		"@types/node": "26.5.0",
+		"@types/node": "26.6.4",
 		"@types/sinon": "22.0.0",
-		"@types/vscode": "1.136.0",
+		"@types/vscode": "1.140.0",
 		"@vscode/test-cli": "0.0.15",
 		"@vscode/test-electron": "3.1.0",
-		"@vscode/vsce": "3.9.2",
+		"@vscode/vsce": "4.0.0",
 		"diff": "9.0.0",
 		"esbuild": "0.28.2",
-		"mocha": "11.8.0",
-		"serialize-javascript": "7.1.0",
+		"mocha": "12.0.3",
+		"serialize-javascript": "7.1.2",
 		"sinon": "22.1.0",
 		"typescript": "7.0.2",
-		"zod": "4.5.4"
+		"zod": "4.6.5"
 	},
 	"extensionDependencies": [
 		"vscode.git"
