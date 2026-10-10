@@ -42,6 +42,22 @@ suite('Security Tests', () => {
 			assert.strictEqual(result.summary, 'Extended summary')
 		})
 
+		test('Should reject a whitespace-only description', () => {
+			assert.throws(
+				() =>
+					parseCommitResponse(
+						{
+							type: 'feat',
+							message: 'Add new feature',
+							summary: '   ',
+						},
+						true,
+						'english',
+					),
+				(error) => error instanceof ZodError,
+			)
+		})
+
 		test('Should reject missing fields', () => {
 			assert.throws(
 				() => parseCommitResponse({ type: 'feat' }, false, 'english'),

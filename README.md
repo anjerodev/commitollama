@@ -54,6 +54,7 @@ You can also set `commitollama.model` manually in VS Code settings.
 | `commitollama.useLowerCase` | Lowercase the first letter of the commit message. | `false` |
 | `commitollama.language` | Language preset (`English`, `Spanish`, `Custom`, …). | `English` |
 | `commitollama.promptTemperature` | Model temperature (`0`–`1`). Higher = more creative. | `0.2` |
+| `commitollama.cloudCompatibilityMode` | Always use JSON-only prompting for Ollama Cloud models that do not support Ollama structured output. Commitollama also falls back to this mode automatically after an invalid structured response. | `false` |
 | `commitollama.commitTemplate` | Final commit format. Placeholders: `{{type}}`, `{{emoji}}`, `{{message}}`. | `{{type}} {{emoji}}: {{message}}` |
 
 ### Custom overrides
@@ -68,6 +69,20 @@ You can also set `commitollama.model` manually in VS Code settings.
 | `commitollama.custom.commitMessageRules` | Custom rules for the commit subject. |
 | `commitollama.custom.descriptionPrompt` | Custom prompt for the commit description. |
 | `commitollama.custom.requestHeaders` | Extra HTTP headers for Ollama requests (e.g. auth). |
+
+### Ollama Cloud compatibility
+
+For Ollama Cloud, configure its endpoint and authentication headers. Commitollama automatically retries a failed or incomplete structured response as JSON-only text, extracts a JSON object, and validates it against the commit schema. Enable `commitollama.cloudCompatibilityMode` to use this compatibility path on the first request instead.
+
+```json
+{
+  "commitollama.custom.endpoint": "<your Ollama Cloud endpoint>",
+  "commitollama.custom.requestHeaders": {
+    "Authorization": "Bearer <your token>"
+  },
+  "commitollama.cloudCompatibilityMode": true
+}
+```
 
 Example emoji map:
 

@@ -1,5 +1,6 @@
 import * as ai from './ai'
 import { config } from './config'
+import { buildSummarizeModelOptions } from './modelOptions'
 import { createSummarizeAdapter } from './ollamaAdapter'
 import { formatExtensionError, logExtensionError } from './security/log'
 import { wrapUntrustedContent } from './security/prompt'
@@ -21,11 +22,7 @@ export async function summarizeFileDiff(diff: string): Promise<string> {
 				'Do not say there are no changes, an empty diff, or missing input',
 				'Do not start with "The code changes..." or "This file..."',
 			],
-			modelOptions: {
-				options: {
-					temperature: promptTemperature,
-				},
-			},
+			modelOptions: buildSummarizeModelOptions(model, promptTemperature),
 		})
 
 		return result.summary.trim()

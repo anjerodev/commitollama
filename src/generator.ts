@@ -1,12 +1,15 @@
 import * as vscode from 'vscode'
+import { ZodError } from 'zod'
 import * as ai from './ai'
 import { isLowQualityCommit } from './commitQuality'
 import { config } from './config'
 import { OLLAMA_LIBRARY_URL } from './constants'
+import { buildCommitModelOptions } from './modelOptions'
 import { createChatAdapter } from './ollamaAdapter'
 import {
 	buildCommitSchema,
 	type CommitStructure,
+	extractJsonObject,
 	parseCommitResponse,
 } from './schemas/commit'
 import { formatExtensionError, logExtensionError } from './security/log'
@@ -55,6 +58,15 @@ function isStructuredOutputCompatibilityError(error: unknown): boolean {
 	)
 }
 
+function isCloudResponseValidationError(error: unknown): boolean {
+	return (
+		error instanceof ZodError ||
+		(error instanceof Error &&
+			(error.message === 'Could not find a JSON object in the model response' ||
+				isStructuredOutputCompatibilityError(error)))
+	)
+}
+
 function formatChangeSummaries(summaries: ChangeSummary[]): string {
 	return summaries
 		.map(({ file, summary }) => `- ${file}: ${summary}`)
@@ -93,6 +105,7 @@ function buildStructuredPrompt(options: {
 	descriptionPrompt: string
 	customPrompt?: string
 	extraInstruction?: string
+	jsonOnly?: boolean
 }): string {
 	const {
 		typeRules,
@@ -102,6 +115,7 @@ function buildStructuredPrompt(options: {
 		descriptionPrompt,
 		customPrompt,
 		extraInstruction,
+		jsonOnly,
 	} = options
 
 	const basePrompt =
@@ -126,11 +140,18 @@ function buildStructuredPrompt(options: {
 	${useDescription ? descriptionPrompt : ''}
 	Respond using JSON`
 
-	if (!extraInstruction) {
+	const instructions = [
+		extraInstruction,
+		jsonOnly
+			? `Respond with exactly one valid JSON object and nothing else. Do not use Markdown, code fences, or explanatory text. Required fields: ${useDescription ? '{"type":"feat","message":"Brief commit subject","summary":"One to three sentence commit description"}' : '{"type":"feat","message":"Brief commit subject"}'}. The type value must be one of: feat, fix, docs, style, test, chore, revert, refactor.`
+			: undefined,
+	].filter(Boolean)
+
+	if (instructions.length === 0) {
 		return basePrompt
 	}
 
-	return `${basePrompt}\n\n${extraInstruction}`
+	return `${basePrompt}\n\n${instructions.join('\n\n')}`
 }
 
 async function requestStructuredCommit(
@@ -138,9 +159,11 @@ async function requestStructuredCommit(
 	options?: {
 		extraInstruction?: string
 		branchName?: string | null
+		jsonOnly?: boolean
 	},
 ): Promise<CommitStructure> {
 	const {
+		model,
 		promptTemperature,
 		language,
 		useDescription,
@@ -148,7 +171,9 @@ async function requestStructuredCommit(
 		customTypeRules,
 		customCommitMessageRules,
 		customDescriptionPrompt,
+		cloudCompatibilityMode,
 	} = config.inference
+	const jsonOnly = options?.jsonOnly ?? cloudCompatibilityMode
 
 	const typeRules =
 		customTypeRules ||
@@ -180,28 +205,34 @@ async function requestStructuredCommit(
 		descriptionPrompt,
 		customPrompt,
 		extraInstruction: options?.extraInstruction,
+		jsonOnly,
 	})
 
 	const outputSchema = buildCommitSchema(useDescription, language)
 
-	const result = await ai.chat({
+	const chatOptions = {
 		adapter: createChatAdapter(),
 		systemPrompts: [structuredPrompt],
 		messages: [
 			{
-				role: 'user',
+				role: 'user' as const,
 				content: buildCommitUserContent(summaries, options?.branchName),
 			},
 		],
-		outputSchema,
-		modelOptions: {
-			options: {
-				temperature: promptTemperature,
-				num_predict: 256,
-			},
-			think: false,
-		} as never,
-	})
+		modelOptions: buildCommitModelOptions(model, promptTemperature),
+	}
+
+	if (jsonOnly) {
+		const result = await ai.chat({ ...chatOptions, stream: false })
+		const commit = parseCommitResponse(
+			extractJsonObject(result),
+			useDescription,
+			language,
+		)
+		return commit
+	}
+
+	const result = await ai.chat({ ...chatOptions, outputSchema })
 
 	return parseCommitResponse(result, useDescription, language)
 }
@@ -211,11 +242,36 @@ export async function generateStructuredCommit(
 	branchName?: string | null,
 ): Promise<CommitStructure> {
 	try {
-		let commit = await requestStructuredCommit(summaries, { branchName })
+		let commit: CommitStructure
+		let jsonOnly = config.inference.cloudCompatibilityMode
+
+		try {
+			commit = await requestStructuredCommit(summaries, {
+				branchName,
+				jsonOnly,
+			})
+		} catch (error) {
+			if (!isCloudResponseValidationError(error)) {
+				throw error
+			}
+
+			// Cloud models frequently accept chat requests but either reject
+			// Ollama's structured-output format or omit an optional-looking field
+			// such as the enabled commit description. Retry as JSON-only text even
+			// when the compatibility setting was not enabled in advance.
+			jsonOnly = true
+			commit = await requestStructuredCommit(summaries, {
+				branchName,
+				jsonOnly,
+				extraInstruction:
+					'Your previous response was invalid. Return exactly one JSON object with every required field from the requested format.',
+			})
+		}
 
 		if (isLowQualityCommit(commit.message, commit.type)) {
 			commit = await requestStructuredCommit(summaries, {
 				branchName,
+				jsonOnly,
 				extraInstruction:
 					'The previous response was invalid because it did not describe the staged changes. Use the summaries exactly and describe the real code changes.',
 			})

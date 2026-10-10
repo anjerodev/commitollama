@@ -17,6 +17,7 @@ export const defaultConfig = {
 	language: Languages.English,
 	commitTemplate: '{{type}} {{emoji}}: {{message}}',
 	promptTemperature: 0.2,
+	cloudCompatibilityMode: false,
 	requestHeaders: {},
 	emojis: {
 		feat: '✨',
@@ -78,6 +79,9 @@ class Config {
 
 		const promptTemperature =
 			getConfig('promptTemperature') || defaultConfig.promptTemperature
+		const cloudCompatibilityMode =
+			getConfig('cloudCompatibilityMode') ??
+			defaultConfig.cloudCompatibilityMode
 
 		const customPrompt = getConfig('custom.prompt')
 		const customTypeRules = getConfig('custom.typeRules')
@@ -94,6 +98,7 @@ class Config {
 
 		return {
 			commitEmojis,
+			cloudCompatibilityMode,
 			promptTemperature,
 			commitTemplate,
 			customCommitMessageRules,

@@ -115,11 +115,17 @@
 						"default": 0.2,
 						"order": 7
 					},
+					"commitollama.cloudCompatibilityMode": {
+						"type": "boolean",
+						"description": "Use JSON-only compatibility mode immediately for Ollama Cloud models that do not support structured output. Failed or incomplete structured responses automatically retry with this mode.",
+						"default": false,
+						"order": 8
+					},
 					"commitollama.commitTemplate": {
 						"type": "string",
 						"description": "Custom template for commit messages.",
 						"default": "{{type}} {{emoji}}: {{message}}",
-						"order": 8
+						"order": 9
 					},
 					"commitollama.custom.language": {
 						"type": "string",

@@ -1,7 +1,10 @@
 import * as assert from 'node:assert'
 import * as sinon from 'sinon'
+import * as vscode from 'vscode'
 import * as ai from '../ai'
-import { SummaryCache } from '../cache'
+import { SummaryCache, summaryCache } from '../cache'
+import { buildSummarizeModelOptions } from '../modelOptions'
+import { BackgroundScanner } from '../scheduler'
 import { summarizeFileDiff } from '../summarizer'
 
 suite('Background Scanning Tests', () => {
@@ -64,6 +67,89 @@ suite('Background Scanning Tests', () => {
 			summarizeStub.rejects(new Error('Ollama failed'))
 
 			await assert.rejects(() => summarizeFileDiff('diff'), /Ollama failed/)
+		})
+
+		test('should leave room for GPT-OSS reasoning and visible output', () => {
+			const options = buildSummarizeModelOptions(
+				'gpt-oss:20b-cloud',
+				0.2,
+			) as unknown as {
+				think: string
+				options: { num_predict: number }
+			}
+
+			assert.strictEqual(options.think, 'low')
+			assert.strictEqual(options.options.num_predict, 1024)
+		})
+	})
+
+	suite('BackgroundScanner', () => {
+		teardown(() => {
+			summaryCache.clear()
+		})
+
+		test('should cache a diff fallback when summarization fails', async () => {
+			const rootUri = vscode.Uri.file('/workspace')
+			const fileUri = vscode.Uri.file('/workspace/src/example.ts')
+			const diff = [
+				'diff --git a/src/example.ts b/src/example.ts',
+				'@@ -0,0 +1 @@',
+				'+export const answer = 42',
+			].join('\n')
+			const repository = {
+				rootUri,
+				diffWithHEAD: sinon.stub().resolves(diff),
+			}
+			const scanner = new BackgroundScanner({
+				getGitExtension: () =>
+					({ repositories: [repository] }) as never,
+				summarizeFileDiff: sinon.stub().rejects(new Error('offline')),
+			})
+			scanner.stop()
+
+			try {
+				await (
+					scanner as unknown as {
+						processFile(uri: vscode.Uri): Promise<void>
+					}
+				).processFile(fileUri)
+
+				const cached = summaryCache.get(fileUri.fsPath)
+				assert.strictEqual(cached?.diffHash, summaryCache.computeHash(diff))
+				assert.match(cached?.summary ?? '', /add 1 line/i)
+				assert.match(cached?.summary ?? '', /answer = 42/)
+			} finally {
+				scanner.stop()
+			}
+		})
+
+		test('should skip an overlapping repository scan', async () => {
+			let releaseDiff: ((changes: []) => void) | undefined
+			const diffPending = new Promise<[]>((resolve) => {
+				releaseDiff = resolve
+			})
+			const diffWithHEAD = sinon.stub().returns(diffPending)
+			const scanner = new BackgroundScanner({
+				getGitExtension: () =>
+					({ repositories: [{ diffWithHEAD }] }) as never,
+			})
+			scanner.stop()
+			const scan = (
+				scanner as unknown as {
+					scanOpenRepositories(): Promise<void>
+				}
+			).scanOpenRepositories.bind(scanner)
+
+			try {
+				const firstScan = scan()
+				await scan()
+				assert.strictEqual(diffWithHEAD.callCount, 1)
+
+				releaseDiff?.([])
+				await firstScan
+			} finally {
+				scanner.stop()
+			}
 		})
 	})
 })

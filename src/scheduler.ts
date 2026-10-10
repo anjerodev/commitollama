@@ -2,15 +2,28 @@ import * as vscode from 'vscode'
 import { summaryCache } from './cache'
 import { isLowQualitySummary } from './commitQuality'
 import { config } from './config'
+import { buildDiffFallbackSummary } from './diffFallback'
 import { logExtensionError } from './security/log'
 import { summarizeFileDiff } from './summarizer'
 import { getGitExtension } from './utils'
 
+interface BackgroundScannerDependencies {
+	getGitExtension: typeof getGitExtension
+	summarizeFileDiff: typeof summarizeFileDiff
+}
+
 export class BackgroundScanner {
 	private intervalId: NodeJS.Timeout | undefined
 	private disposables: vscode.Disposable[] = []
+	private scanInProgress = false
+	private readonly dependencies: BackgroundScannerDependencies
 
-	constructor() {
+	constructor(dependencies: Partial<BackgroundScannerDependencies> = {}) {
+		this.dependencies = {
+			getGitExtension,
+			summarizeFileDiff,
+			...dependencies,
+		}
 		this.start()
 	}
 
@@ -48,7 +61,7 @@ export class BackgroundScanner {
 		const { background } = config.inference
 		if (background.enabled && background.interval > 0) {
 			this.intervalId = setInterval(() => {
-				this.scanOpenRepositories()
+				void this.scanOpenRepositories()
 			}, background.interval * 1000)
 		}
 	}
@@ -65,22 +78,31 @@ export class BackgroundScanner {
 	}
 
 	private async scanOpenRepositories() {
-		const git = getGitExtension()
+		if (this.scanInProgress) {
+			return
+		}
+
+		const git = this.dependencies.getGitExtension()
 		if (!git) {
 			return
 		}
 
-		for (const repo of git.repositories) {
-			const changes = await repo.diffWithHEAD()
-			for (const change of changes) {
-				await this.processFile(change.uri)
+		this.scanInProgress = true
+		try {
+			for (const repo of git.repositories) {
+				const changes = await repo.diffWithHEAD()
+				for (const change of changes) {
+					await this.processFile(change.uri)
+				}
 			}
+		} finally {
+			this.scanInProgress = false
 		}
 	}
 
 	private async processFile(uri: vscode.Uri) {
 		try {
-			const git = getGitExtension()
+			const git = this.dependencies.getGitExtension()
 			const repo = git?.repositories.find((r) =>
 				uri.fsPath.startsWith(r.rootUri.fsPath),
 			)
@@ -101,10 +123,18 @@ export class BackgroundScanner {
 				return
 			}
 
-			const summary = await summarizeFileDiff(workingDiff)
-			if (!isLowQualitySummary(summary)) {
-				summaryCache.set(uri.fsPath, hash, summary)
+			let summary: string
+			try {
+				summary = await this.dependencies.summarizeFileDiff(workingDiff)
+			} catch (error) {
+				logExtensionError(`backgroundScan ${uri.fsPath}`, error)
+				summary = buildDiffFallbackSummary(relativePath, workingDiff)
 			}
+
+			if (isLowQualitySummary(summary)) {
+				summary = buildDiffFallbackSummary(relativePath, workingDiff)
+			}
+			summaryCache.set(uri.fsPath, hash, summary)
 		} catch (error) {
 			logExtensionError(`backgroundScan ${uri.fsPath}`, error)
 		}

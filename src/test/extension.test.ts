@@ -11,6 +11,7 @@ import {
 	getCommitMessage,
 	normalizeBranchName,
 } from '../generator'
+import { extractJsonObject } from '../schemas/commit'
 import { getConfig, getGitExtension, setConfig } from '../utils'
 
 suite('Extension Test Suite', () => {
@@ -139,12 +140,248 @@ suite('generateStructuredCommit Tests', () => {
 		assert.ok(systemPrompt.includes('current branch name as optional context'))
 	})
 
+	test('Should use a text request and parse Cloud JSON responses', async () => {
+		const originalCloudCompatibilityMode = getConfig('cloudCompatibilityMode')
+		await setConfig('cloudCompatibilityMode', true)
+		chatStub.resolves(
+			'```json\n{"type":"feat","message":"Add new feature"}\n```',
+		)
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+			const chatArgs = chatStub.firstCall.args[0]
+
+			assert.strictEqual(result.type, 'feat')
+			assert.strictEqual(chatArgs.outputSchema, undefined)
+			assert.strictEqual(chatArgs.stream, false)
+			assert.ok(
+				chatArgs.systemPrompts[0].includes(
+					'Respond with exactly one valid JSON object',
+				),
+			)
+		} finally {
+			await setConfig(
+				'cloudCompatibilityMode',
+				originalCloudCompatibilityMode ?? defaultConfig.cloudCompatibilityMode,
+			)
+		}
+	})
+
+	test('Should preserve output budget for GPT-OSS reasoning', async () => {
+		const originalCloudCompatibilityMode = getConfig('cloudCompatibilityMode')
+		const originalModel = vscode.workspace
+			.getConfiguration('commitollama')
+			.inspect<string>('model')?.workspaceValue
+		await setConfig('cloudCompatibilityMode', true)
+		await setConfig('model', 'gpt-oss:20b-cloud')
+		chatStub.resolves('{"type":"feat","message":"Add new feature"}')
+
+		try {
+			await generateStructuredCommit(summariesSample)
+
+			const modelOptions = chatStub.firstCall.args[0].modelOptions
+			assert.strictEqual(modelOptions.think, 'low')
+			assert.strictEqual(modelOptions.options.num_predict, 2048)
+		} finally {
+			await setConfig(
+				'cloudCompatibilityMode',
+				originalCloudCompatibilityMode ?? defaultConfig.cloudCompatibilityMode,
+			)
+			await vscode.workspace
+				.getConfiguration('commitollama')
+				.update(
+					'model',
+					originalModel,
+					vscode.ConfigurationTarget.Workspace,
+				)
+		}
+	})
+
+	test('Should request and validate localized GPT-OSS Cloud descriptions', async () => {
+		const originalCloudCompatibilityMode = getConfig('cloudCompatibilityMode')
+		const originalModel = vscode.workspace
+			.getConfiguration('commitollama')
+			.inspect<string>('model')?.workspaceValue
+		const originalUseDescription = getConfig('useDescription')
+		const originalLanguage = vscode.workspace
+			.getConfiguration('commitollama')
+			.inspect<string>('language')?.workspaceValue
+		const originalDescriptionPrompt = vscode.workspace
+			.getConfiguration('commitollama')
+			.inspect<string>('custom.descriptionPrompt')?.workspaceValue
+		await setConfig('cloudCompatibilityMode', true)
+		await setConfig('model', 'gpt-oss:20b-cloud')
+		await setConfig('useDescription', true)
+		await setConfig('language', 'Spanish')
+		await setConfig(
+			'custom.descriptionPrompt',
+			'Describe el impacto para las personas usuarias.',
+		)
+		chatStub.resolves(
+			'{"type":"feat","message":"Agregar función","summary":"Agrega la función y corrige el error."}',
+		)
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+
+			assert.strictEqual(
+				result.summary,
+				'Agrega la función y corrige el error.',
+			)
+			assert.strictEqual(chatStub.callCount, 1)
+			const prompt = chatStub.firstCall.args[0].systemPrompts[0] as string
+			assert.ok(prompt.includes('Write the message in spanish'))
+			assert.ok(prompt.includes('Describe el impacto'))
+			assert.ok(prompt.includes('"summary"'))
+		} finally {
+			await setConfig(
+				'cloudCompatibilityMode',
+				originalCloudCompatibilityMode ?? defaultConfig.cloudCompatibilityMode,
+			)
+			await setConfig('useDescription', originalUseDescription ?? false)
+			const configuration = vscode.workspace.getConfiguration('commitollama')
+			await configuration.update(
+				'language',
+				originalLanguage,
+				vscode.ConfigurationTarget.Workspace,
+			)
+			await configuration.update(
+				'custom.descriptionPrompt',
+				originalDescriptionPrompt,
+				vscode.ConfigurationTarget.Workspace,
+			)
+			await vscode.workspace
+				.getConfiguration('commitollama')
+				.update(
+					'model',
+					originalModel,
+					vscode.ConfigurationTarget.Workspace,
+				)
+		}
+	})
+
+	test('Should retry Cloud responses that do not contain JSON', async () => {
+		const originalCloudCompatibilityMode = getConfig('cloudCompatibilityMode')
+		await setConfig('cloudCompatibilityMode', true)
+		chatStub.onFirstCall().resolves('I would use a feat commit.')
+		chatStub
+			.onSecondCall()
+			.resolves('{"type":"feat","message":"Add new feature"}')
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+
+			assert.strictEqual(result.type, 'feat')
+			assert.strictEqual(chatStub.callCount, 2)
+			assert.ok(
+				chatStub.secondCall.args[0].systemPrompts[0].includes(
+					'previous response was invalid',
+				),
+			)
+		} finally {
+			await setConfig(
+				'cloudCompatibilityMode',
+				originalCloudCompatibilityMode ?? defaultConfig.cloudCompatibilityMode,
+			)
+		}
+	})
+
+	test('Should retry Cloud responses that omit the enabled summary', async () => {
+		const originalCloudCompatibilityMode = getConfig('cloudCompatibilityMode')
+		const originalUseDescription = getConfig('useDescription')
+		await setConfig('cloudCompatibilityMode', true)
+		await setConfig('useDescription', true)
+		chatStub
+			.onFirstCall()
+			.resolves('{"type":"feat","message":"Add new feature"}')
+		chatStub
+			.onSecondCall()
+			.resolves(
+				'{"type":"feat","message":"Add new feature","summary":"Adds the requested feature."}',
+			)
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+
+			assert.strictEqual(result.summary, 'Adds the requested feature.')
+			assert.strictEqual(chatStub.callCount, 2)
+			assert.ok(
+				chatStub.firstCall.args[0].systemPrompts[0].includes('"summary"'),
+			)
+		} finally {
+			await setConfig(
+				'cloudCompatibilityMode',
+				originalCloudCompatibilityMode ?? defaultConfig.cloudCompatibilityMode,
+			)
+			await setConfig('useDescription', originalUseDescription ?? false)
+		}
+	})
+
+	test('Should fall back to JSON-only output when structured output omits summary', async () => {
+		const originalUseDescription = getConfig('useDescription')
+		await setConfig('useDescription', true)
+		chatStub
+			.onFirstCall()
+			.resolves({ type: 'feat', message: 'Add new feature' })
+		chatStub
+			.onSecondCall()
+			.resolves(
+				'{"type":"feat","message":"Add new feature","summary":"Adds the requested feature."}',
+			)
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+
+			assert.strictEqual(result.summary, 'Adds the requested feature.')
+			assert.strictEqual(chatStub.callCount, 2)
+			assert.strictEqual(chatStub.secondCall.args[0].outputSchema, undefined)
+			assert.strictEqual(chatStub.secondCall.args[0].stream, false)
+		} finally {
+			await setConfig('useDescription', originalUseDescription ?? false)
+		}
+	})
+
 	test('Should describe detached HEAD when branch name is missing', async () => {
 		await generateStructuredCommit(summariesSample)
 
 		const userContent = chatStub.firstCall.args[0].messages[0].content as string
 		assert.ok(userContent.includes('detached HEAD or unnamed'))
 		assert.ok(!userContent.includes('<untrusted_branch>'))
+	})
+})
+
+suite('Cloud JSON response parser', () => {
+	test('parses a raw JSON object', () => {
+		assert.deepStrictEqual(
+			extractJsonObject('{"type":"feat","message":"Add feature"}'),
+			{
+				type: 'feat',
+				message: 'Add feature',
+			},
+		)
+	})
+
+	test('parses a JSON fenced response', () => {
+		assert.deepStrictEqual(
+			extractJsonObject('```json\n{"type":"fix","message":"Fix bug"}\n```'),
+			{ type: 'fix', message: 'Fix bug' },
+		)
+	})
+
+	test('parses a generically fenced response', () => {
+		assert.deepStrictEqual(
+			extractJsonObject('```\n{"type":"docs","message":"Update README"}\n```'),
+			{ type: 'docs', message: 'Update README' },
+		)
+	})
+
+	test('parses a JSON object embedded in text', () => {
+		assert.deepStrictEqual(
+			extractJsonObject(
+				'Here is the commit: {"type":"test","message":"Add parser tests"}. നന്ദി!',
+			),
+			{ type: 'test', message: 'Add parser tests' },
+		)
 	})
 })
 

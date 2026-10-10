@@ -1,5 +1,9 @@
-import type { AnySummarizeAdapter, AnyTextAdapter } from '@tanstack/ai'
-import { createOllamaChat, createOllamaSummarize } from '@tanstack/ai-ollama'
+import {
+	ChatStreamSummarizeAdapter,
+	type AnySummarizeAdapter,
+	type AnyTextAdapter,
+} from '@tanstack/ai/adapters'
+import { createOllamaChat } from '@tanstack/ai-ollama'
 import { config } from './config'
 
 export interface OllamaConnectionConfig {
@@ -38,6 +42,15 @@ export function createChatAdapter(): AnyTextAdapter {
 
 export function createSummarizeAdapter() {
 	const { model } = config.inference
-	const { host } = getOllamaConnectionConfig()
-	return createOllamaSummarize(model, host) as unknown as AnySummarizeAdapter
+	const { host, headers } = getOllamaConnectionConfig()
+
+	// createOllamaSummarize accepts only a host, so it silently loses custom
+	// headers (including the authorization header required by Ollama Cloud).
+	// Wrap the configured chat adapter instead so summaries and commit messages
+	// use the identical connection configuration.
+	return new ChatStreamSummarizeAdapter(
+		createOllamaChat(model, { host, headers }),
+		model,
+		'ollama',
+	) as unknown as AnySummarizeAdapter
 }

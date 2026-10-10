@@ -7,6 +7,7 @@ export type ExtensionConfig = {
 	useLowerCase: boolean
 	language: Language
 	promptTemperature: number
+	cloudCompatibilityMode: boolean
 	commitTemplate: string
 	'custom.language'?: string
 	'custom.emojis'?: EmojisMap

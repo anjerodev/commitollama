@@ -3,5 +3,6 @@
     "commitollama.useDescription": false,
     "commitollama.useLowerCase": false,
     "commitollama.commitTemplate": "{{type}} {{emoji}}: {{message}}",
-    "commitollama.custom.emojis": {}
+    "commitollama.custom.emojis": {},
+    "commitollama.cloudCompatibilityMode": false
 }
