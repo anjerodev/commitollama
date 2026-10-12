@@ -16,11 +16,11 @@ importers:
         specifier: 2.5.15
         version: 2.5.15
       '@tanstack/ai':
-        specifier: 0.65.1
-        version: 0.65.1(zod@4.6.5)
+        specifier: 0.68.0
+        version: 0.68.0(zod@4.6.5)
       '@tanstack/ai-ollama':
-        specifier: 0.11.13
-        version: 0.11.13(@tanstack/ai@0.65.1(zod@4.6.5))
+        specifier: 0.11.16
+        version: 0.11.16(@tanstack/ai@0.68.0(zod@4.6.5))
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
@@ -484,16 +484,16 @@ packages:
   '@tanstack/ai-event-client@0.13.1':
     resolution: {integrity: sha512-lCPcshu6Sd4tFNeMSr+HXgdqCGupYU2cpJZVUent4GkFx41dXzrBaKkwOgkji6olDBT99OBagWCce1NZ15XeJA==}
 
-  '@tanstack/ai-ollama@0.11.13':
-    resolution: {integrity: sha512-ys3ZmzQR2wQtY9ET9x5HwGwSQs5Ia0GZlel1x4EKXiI3lESv0n337xh5Q7cb5mIXAePBtC5FsAWLZJJFDj34eg==}
+  '@tanstack/ai-ollama@0.11.16':
+    resolution: {integrity: sha512-y54rzbWAvtKykHNYFqKPAUgFvSvtIZFJy0O4Re+O7nxa10u9X24cTubs9FYEm/GtOvImjhVaED22ijEXB1q3fg==}
     peerDependencies:
-      '@tanstack/ai': ^0.65.0
+      '@tanstack/ai': ^0.68.0
 
   '@tanstack/ai-utils@0.4.1':
     resolution: {integrity: sha512-B3PGn2WYiRtivZCt7MUN2iXeoK9fwZhgdbrPIz5hPqVR8r8sNDZMmMqtiOkp7sxzPvVlCBItFVHw7QpZ9g6e9w==}
 
-  '@tanstack/ai@0.65.1':
-    resolution: {integrity: sha512-odtyX1+LiLG8DHXpgWh4DVYNJD6G6l/ii3WKTu6JXJDCKf2LQ8ieQOANzoEiE7lciJXPsr1G0PvnFFVK3QJDnQ==}
+  '@tanstack/ai@0.68.0':
+    resolution: {integrity: sha512-l++ORsrL5dAC/nNJ2ZyQiTkDmxNo2Xh0lsS4m0QbWzUVyvmSmFriDemqQmAiko+zMvVeeQ8QlTXUMOLLPfZyEQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': '>=1.9.0'
@@ -1905,15 +1905,15 @@ snapshots:
     dependencies:
       '@tanstack/devtools-event-client': 0.4.4
 
-  '@tanstack/ai-ollama@0.11.13(@tanstack/ai@0.65.1(zod@4.6.5))':
+  '@tanstack/ai-ollama@0.11.16(@tanstack/ai@0.68.0(zod@4.6.5))':
     dependencies:
-      '@tanstack/ai': 0.65.1(zod@4.6.5)
+      '@tanstack/ai': 0.68.0(zod@4.6.5)
       '@tanstack/ai-utils': 0.4.1
       ollama: 0.6.3
 
   '@tanstack/ai-utils@0.4.1': {}
 
-  '@tanstack/ai@0.65.1(zod@4.6.5)':
+  '@tanstack/ai@0.68.0(zod@4.6.5)':
     dependencies:
       '@ag-ui/core': 1.0.0(zod@4.6.5)
       '@standard-schema/spec': 1.1.0
