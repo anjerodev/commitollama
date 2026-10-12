@@ -204,7 +204,7 @@
 		"@tanstack/ai": "0.65.1",
 		"@tanstack/ai-ollama": "0.11.13",
 		"@types/mocha": "10.0.10",
-		"@types/node": "26.6.4",
+		"@types/node": "26.6.5",
 		"@types/sinon": "22.0.0",
 		"@types/vscode": "1.140.0",
 		"@vscode/test-cli": "0.0.15",
