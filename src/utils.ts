@@ -2,13 +2,19 @@ import { relative } from 'node:path'
 import * as vscode from 'vscode'
 import { summaryCache } from './cache'
 import { isLowQualitySummary } from './commitQuality'
+import { config } from './config'
 import { buildDiffFallbackSummary } from './diffFallback'
-import { type ChangeSummary, getCommitMessage } from './generator'
+import {
+	type ChangeSummary,
+	getCommitMessage,
+	getCommitMessageFromDiff,
+} from './generator'
 import { ensureModelSelected } from './modelSelection'
+import { shouldUseDirectDiffPrompt } from './promptStrategy'
 import { formatExtensionError, logExtensionError } from './security/log'
 import { summarizeFileDiff } from './summarizer'
 import type { ExtensionConfig } from './types/config'
-import type { GitExtension, Repository } from './types/git'
+import type { Change, GitExtension, Repository } from './types/git'
 
 export function getConfig<K extends keyof ExtensionConfig>(key: K) {
 	return vscode.workspace
@@ -84,6 +90,37 @@ async function summarizeStagedChange(
 	return { file: path, summary }
 }
 
+async function buildSummariesForCommit(
+	repo: Repository,
+	stagedFiles: Change[],
+): Promise<ChangeSummary[]> {
+	const summaries: ChangeSummary[] = []
+	for (const change of stagedFiles) {
+		const summary = await summarizeStagedChange(repo, change.uri)
+		if (summary) {
+			summaries.push(summary)
+		}
+	}
+
+	if (summaries.length === 0) {
+		const fullDiff = await repo.diff(true)
+		if (fullDiff?.trim()) {
+			const summary = await resolveSummary(
+				'staged changes',
+				'staged changes',
+				fullDiff,
+				summaryCache.computeHash(fullDiff),
+			)
+			summaries.push({
+				file: 'staged changes',
+				summary,
+			})
+		}
+	}
+
+	return summaries
+}
+
 export async function createCommitMessage(repo: Repository) {
 	vscode.window.withProgress(
 		{
@@ -98,40 +135,50 @@ export async function createCommitMessage(repo: Repository) {
 					return
 				}
 
-				// Clean the current message:
 				repo.inputBox.value = ''
 
-				const ind = await repo.diffIndexWithHEAD()
+				const stagedFiles = await repo.diffIndexWithHEAD()
 
-				if (ind.length === 0) {
+				if (stagedFiles.length === 0) {
 					throw new Error(
 						'No changes to commit. Please stage your changes first.',
 					)
 				}
 
-				const summaries: ChangeSummary[] = []
-				for (const change of ind) {
-					const summary = await summarizeStagedChange(repo, change.uri)
-					if (summary) {
-						summaries.push(summary)
+				const stagedDiff = (await repo.diff(true))?.trim() ?? ''
+				if (!stagedDiff) {
+					throw new Error(
+						'No readable staged diffs were found. Stage text file changes with a visible diff.',
+					)
+				}
+
+				const branchName = repo.state.HEAD?.name
+				const { promptStrategy } = config.inference
+				const preferDiff = shouldUseDirectDiffPrompt({
+					strategy: promptStrategy,
+					diffLength: stagedDiff.length,
+					fileCount: stagedFiles.length,
+				})
+
+				if (preferDiff) {
+					try {
+						repo.inputBox.value = await getCommitMessageFromDiff(
+							stagedDiff,
+							branchName,
+						)
+						return
+					} catch (error) {
+						if (promptStrategy === 'diff') {
+							throw error
+						}
+						logExtensionError(
+							'createCommitMessage.diffPromptFallback',
+							error,
+						)
 					}
 				}
 
-				if (summaries.length === 0) {
-					const fullDiff = await repo.diff(true)
-					if (fullDiff?.trim()) {
-						const summary = await resolveSummary(
-							'staged changes',
-							'staged changes',
-							fullDiff,
-							summaryCache.computeHash(fullDiff),
-						)
-						summaries.push({
-							file: 'staged changes',
-							summary,
-						})
-					}
-				}
+				const summaries = await buildSummariesForCommit(repo, stagedFiles)
 
 				if (summaries.length === 0) {
 					throw new Error(
@@ -139,9 +186,7 @@ export async function createCommitMessage(repo: Repository) {
 					)
 				}
 
-				const branchName = repo.state.HEAD?.name
-				const commitMessage = await getCommitMessage(summaries, branchName)
-				repo.inputBox.value = commitMessage
+				repo.inputBox.value = await getCommitMessage(summaries, branchName)
 			} catch (error: unknown) {
 				logExtensionError('createCommitMessage', error)
 				const message =

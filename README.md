@@ -23,7 +23,11 @@ A free alternative to Github Copilot's commit generator that runs on your device
 
 ### Recommended models
 
-These models work well for commit messages and are highlighted in the model picker:
+Prefer **small, non-reasoning (no thinking) instruct/coder models**. Commit messages are short tasks; thinking/reasoning models (R1, QwQ, “bonsai”, and similar) are usually much slower and often worse for this use case. In LM Studio, turn **Reasoning / Thinking Off** for the loaded model when that option exists.
+
+A strong default on both Ollama and LM Studio is **Qwen2.5-Coder 3B Instruct** (`qwen2.5-coder:3b` in Ollama).
+
+Other models that work well and are highlighted in the Ollama model picker:
 
 `llama3.2`, `codellama`, `qwen3`, `qwen2.5-coder:7b`, `mistral`, `gemma3`, `codegemma`
 
@@ -48,7 +52,9 @@ You can also set `commitollama.model` manually in VS Code settings.
 
 | Setting | Description | Default |
 | --- | --- | --- |
-| `commitollama.model` | Ollama model tag (e.g. `llama3.2:latest`). Set via the model picker or manually. | `llama3.2:latest` |
+| `commitollama.provider` | Inference provider: `ollama` or `openai-compatible` (LM Studio and similar). | `ollama` |
+| `commitollama.model` | Model id (e.g. `llama3.2:latest` or an LM Studio model id). Set via the model picker or manually. | `llama3.2:latest` |
+| `commitollama.promptStrategy` | `auto` (diff when small, otherwise summaries), `diff` (always one call on the staged diff), or `summaries` (summarize files first). | `auto` |
 | `commitollama.useEmojis` | Add emojis to commit messages. | `false` |
 | `commitollama.useDescription` | Add a longer description below the subject line. | `false` |
 | `commitollama.useLowerCase` | Lowercase the first letter of the commit message. | `false` |
@@ -62,12 +68,27 @@ You can also set `commitollama.model` manually in VS Code settings.
 | --- | --- |
 | `commitollama.custom.language` | Custom language. Used when `commitollama.language` is `Custom`. |
 | `commitollama.custom.emojis` | Map commit types to emojis. Only used when emojis are enabled. |
-| `commitollama.custom.endpoint` | Ollama server URL. Empty uses `http://127.0.0.1:11434`. |
+| `commitollama.custom.endpoint` | Inference server URL. Empty uses the provider default (`http://127.0.0.1:11434` for Ollama, `http://127.0.0.1:1234/v1` for OpenAI-compatible). |
 | `commitollama.custom.prompt` | Replace the default commit prompt entirely. |
 | `commitollama.custom.typeRules` | Custom rules for commit types. |
 | `commitollama.custom.commitMessageRules` | Custom rules for the commit subject. |
 | `commitollama.custom.descriptionPrompt` | Custom prompt for the commit description. |
-| `commitollama.custom.requestHeaders` | Extra HTTP headers for Ollama requests (e.g. auth). |
+| `commitollama.custom.requestHeaders` | Extra HTTP headers for inference requests (e.g. auth). |
+
+### OpenAI-compatible servers (LM Studio, etc.)
+
+1. Start the local server and load a model.
+2. Set the provider and endpoint (LM Studio defaults shown):
+
+```json
+{
+  "commitollama.provider": "openai-compatible",
+  "commitollama.custom.endpoint": "http://127.0.0.1:1234/v1"
+}
+```
+
+3. Run **Commitollama: Switch Model** and pick a model from the server.
+4. Use a non-thinking model (for example Qwen2.5-Coder 3B Instruct) and disable Reasoning/Thinking in LM Studio if available.
 
 Example emoji map:
 
@@ -97,7 +118,7 @@ Summarizes file changes in the background while you work. When you commit, cache
 ## Known Issues
 
 - Depending on the model, commit messages can be longer than ideal. They are meant as a starting point and can be edited before committing.
-- Some models do not support the structured JSON output Commitollama uses (for example certain reasoning or harmony-format models). If generation fails, switch to a recommended model via **Commitollama: Switch Model**. Error messages include the underlying Ollama response when available.
+- Some models do not support the structured JSON output Commitollama uses (for example certain reasoning or harmony-format models). Prefer a non-thinking recommended model via **Commitollama: Switch Model**. Error messages include the underlying provider response when available.
 
 ## Contributing
 

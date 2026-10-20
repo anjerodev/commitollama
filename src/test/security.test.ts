@@ -104,6 +104,12 @@ suite('Security Tests', () => {
 			}
 			assert.ok(message.includes('ollama pull'))
 		})
+
+		test('Should describe OpenAI-compatible empty state', () => {
+			const message = formatNoModelsMessage('openai-compatible')
+			assert.ok(message.includes('OpenAI-compatible'))
+			assert.ok(message.includes('1234/v1'))
+		})
 	})
 
 	suite('sanitizeRequestHeaders', () => {

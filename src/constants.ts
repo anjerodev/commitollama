@@ -1,6 +1,9 @@
 export const OLLAMA_LIBRARY_URL = 'https://ollama.com/library'
 export const DEFAULT_OLLAMA_ENDPOINT = 'http://127.0.0.1:11434'
+export const DEFAULT_OPENAI_COMPATIBLE_ENDPOINT = 'http://127.0.0.1:1234/v1'
 export const DEFAULT_MODEL = 'llama3.2:latest'
+export const DEFAULT_PROVIDER = 'ollama' as const
+export const DEFAULT_PROMPT_STRATEGY = 'auto' as const
 
 /** Maps removed preset setting keys to Ollama model tags. */
 export const LEGACY_MODEL_SETTINGS: Record<string, string> = {
@@ -30,7 +33,15 @@ export function isRecommendedModel(modelName: string): boolean {
 	)
 }
 
-export function formatNoModelsMessage(): string {
+export function formatNoModelsMessage(
+	provider: 'ollama' | 'openai-compatible' = 'ollama',
+): string {
+	if (provider === 'openai-compatible') {
+		return (
+			'No models found on your OpenAI-compatible server. Load a model in LM Studio (or your local server), keep the server running, and check `commitollama.custom.endpoint` (default `http://127.0.0.1:1234/v1`).'
+		)
+	}
+
 	const recommended = RECOMMENDED_COMMIT_MODELS.join(', ')
 	return (
 		`No Ollama models found on your instance. Pull one in your terminal first, for example:\n\n` +
