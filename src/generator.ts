@@ -194,13 +194,13 @@ async function requestStructuredCommit(
 			},
 		],
 		outputSchema,
+		reasoning: false,
 		modelOptions: {
 			options: {
 				temperature: promptTemperature,
 				num_predict: 256,
 			},
-			think: false,
-		} as never,
+		},
 	})
 
 	return parseCommitResponse(result, useDescription, language)
