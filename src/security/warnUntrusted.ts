@@ -1,19 +1,34 @@
 import * as vscode from 'vscode'
 
-const warnedSettings = new Set<'endpoint' | 'headers'>()
+const warnedSettings = new Set<string>()
 
-export function warnUntrustedConfigOnce(setting: 'endpoint' | 'headers'): void {
-	if (warnedSettings.has(setting)) {
+function warnOnce(key: string, message: string): void {
+	if (warnedSettings.has(key)) {
 		return
 	}
-	warnedSettings.add(setting)
+	warnedSettings.add(key)
+	vscode.window.showWarningMessage(message)
+}
 
+export function warnUntrustedConfigOnce(setting: 'endpoint' | 'headers'): void {
 	const label =
 		setting === 'endpoint'
 			? 'custom inference endpoint'
 			: 'custom request headers'
 
-	vscode.window.showWarningMessage(
-		`Commitollama: ${label} is ignored in untrusted workspaces. Trust this workspace to use custom inference settings.`,
+	warnOnce(
+		`untrusted:${setting}`,
+		`Commitollama: ${label} is ignored in untrusted workspaces.`,
 	)
+}
+
+export function warnWorkspaceNetworkIgnoredOnce(
+	setting: 'endpoint' | 'headers',
+): void {
+	const message =
+		setting === 'endpoint'
+			? 'Commitollama: ignored a non-local inference endpoint from workspace settings. Set commitollama.custom.endpoint in user settings to use a remote server.'
+			: 'Commitollama: ignored request headers from workspace settings. Set commitollama.custom.requestHeaders in user settings.'
+
+	warnOnce(`workspace:${setting}`, message)
 }

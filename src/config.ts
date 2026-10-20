@@ -98,10 +98,8 @@ class Config {
 			language = getConfig('custom.language') || defaultConfig.language
 		}
 
-		const endpoint = resolveEndpoint(getConfig('custom.endpoint'), provider)
-		const requestHeaders = resolveRequestHeaders(
-			getConfig('custom.requestHeaders'),
-		)
+		const resolvedEndpoint = resolveEndpoint(provider)
+		const requestHeaders = resolveRequestHeaders(resolvedEndpoint.source)
 
 		const promptTemperature =
 			getConfig('promptTemperature') || defaultConfig.promptTemperature
@@ -127,7 +125,7 @@ class Config {
 			customDescriptionPrompt,
 			customPrompt,
 			customTypeRules,
-			endpoint,
+			endpoint: resolvedEndpoint.endpoint,
 			language,
 			model,
 			provider,

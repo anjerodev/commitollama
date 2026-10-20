@@ -1,5 +1,9 @@
 import * as vscode from 'vscode'
-import { warnUntrustedConfigOnce } from './warnUntrusted'
+import type { EndpointSource } from './endpoint'
+import {
+	warnUntrustedConfigOnce,
+	warnWorkspaceNetworkIgnoredOnce,
+} from './warnUntrusted'
 
 const BLOCKED_HEADERS = new Set([
 	'host',
@@ -39,19 +43,70 @@ export function sanitizeRequestHeaders(
 	return sanitized
 }
 
-export function resolveRequestHeaders(
-	raw: Record<string, string> | undefined,
-): Record<string, string> {
-	if (!vscode.workspace.isTrusted) {
-		if (raw && Object.keys(raw).length > 0) {
-			warnUntrustedConfigOnce('headers')
+function headerRecord(value: unknown): Record<string, string> | undefined {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+		return undefined
+	}
+
+	const entries = Object.entries(value as Record<string, unknown>).filter(
+		(entry): entry is [string, string] => typeof entry[1] === 'string',
+	)
+	if (entries.length === 0) {
+		return undefined
+	}
+
+	return Object.fromEntries(entries)
+}
+
+export function selectRequestHeaders(options: {
+	trusted: boolean
+	endpointSource: EndpointSource
+	workspaceValue?: unknown
+	folderValue?: unknown
+	globalValue?: unknown
+}): { headers: Record<string, string>; ignoredWorkspaceHeaders: boolean } {
+	const repoHeaders = Boolean(
+		headerRecord(options.folderValue) || headerRecord(options.workspaceValue),
+	)
+	const userHeaders = headerRecord(options.globalValue)
+
+	if (!options.trusted) {
+		return {
+			headers: {},
+			ignoredWorkspaceHeaders: repoHeaders || Boolean(userHeaders),
 		}
-		return {}
 	}
 
-	if (!raw || typeof raw !== 'object') {
-		return {}
+	// A repository-selected host must not receive credentials from user settings.
+	if (options.endpointSource === 'workspace-loopback') {
+		return { headers: {}, ignoredWorkspaceHeaders: repoHeaders }
 	}
 
-	return sanitizeRequestHeaders(raw)
+	return {
+		headers: sanitizeRequestHeaders(userHeaders ?? {}),
+		ignoredWorkspaceHeaders: repoHeaders,
+	}
+}
+
+export function resolveRequestHeaders(
+	endpointSource: EndpointSource,
+): Record<string, string> {
+	const inspected = vscode.workspace
+		.getConfiguration('commitollama')
+		.inspect<Record<string, string>>('custom.requestHeaders')
+	const selected = selectRequestHeaders({
+		trusted: vscode.workspace.isTrusted,
+		endpointSource,
+		workspaceValue: inspected?.workspaceValue,
+		folderValue: inspected?.workspaceFolderValue,
+		globalValue: inspected?.globalValue,
+	})
+
+	if (!vscode.workspace.isTrusted && selected.ignoredWorkspaceHeaders) {
+		warnUntrustedConfigOnce('headers')
+	} else if (selected.ignoredWorkspaceHeaders) {
+		warnWorkspaceNetworkIgnoredOnce('headers')
+	}
+
+	return selected.headers
 }
