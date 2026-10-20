@@ -1,7 +1,11 @@
+import type { PromptStrategy } from '../promptStrategy'
+import type { ProviderId } from '../providers/types'
 import type { EmojisMap, Language } from './llm'
 
 export type ExtensionConfig = {
 	model?: string
+	provider?: ProviderId
+	promptStrategy?: PromptStrategy
 	useEmojis: boolean
 	useDescription: boolean
 	useLowerCase: boolean

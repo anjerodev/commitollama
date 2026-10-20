@@ -6,9 +6,11 @@ import { defaultConfig } from '../config'
 import * as extension from '../extension'
 import type { ChangeSummary } from '../generator'
 import {
+	buildCommitDiffUserContent,
 	buildCommitUserContent,
 	generateStructuredCommit,
 	getCommitMessage,
+	getCommitMessageFromDiff,
 	normalizeBranchName,
 } from '../generator'
 import { getConfig, getGitExtension, setConfig } from '../utils'
@@ -146,6 +148,94 @@ suite('generateStructuredCommit Tests', () => {
 		assert.ok(userContent.includes('detached HEAD or unnamed'))
 		assert.ok(!userContent.includes('<untrusted_branch>'))
 	})
+
+	test('Should parse JSON text responses for OpenAI-compatible provider', async () => {
+		const originalProvider = getConfig('provider')
+		await setConfig('provider', 'openai-compatible')
+		chatStub.resolves({
+			text: '{"type":"feat","message":"Add new feature"}',
+			chunks: [],
+		})
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+
+			assert.strictEqual(result.type, 'feat')
+			assert.strictEqual(result.message, 'Add new feature')
+			assert.strictEqual(chatStub.firstCall.args[0].stream, false)
+			assert.strictEqual(chatStub.firstCall.args[0].reasoning, false)
+			assert.strictEqual(chatStub.firstCall.args[0].outputSchema, undefined)
+			assert.strictEqual(chatStub.firstCall.args[0].modelOptions.max_tokens, 2048)
+			assert.strictEqual(
+				chatStub.firstCall.args[0].modelOptions.response_format,
+				undefined,
+			)
+			assert.deepStrictEqual(
+				chatStub.firstCall.args[0].modelOptions.chat_template_kwargs,
+				{ enable_thinking: false },
+			)
+			assert.strictEqual(
+				chatStub.firstCall.args[0].modelOptions.enable_thinking,
+				false,
+			)
+			assert.ok(
+				chatStub.firstCall.args[0].systemPrompts[0].includes(
+					'exactly one valid JSON object',
+				),
+			)
+		} finally {
+			await setConfig('provider', originalProvider ?? 'ollama')
+		}
+	})
+
+	test('Should parse JSON from reasoning chunks when text is empty', async () => {
+		const originalProvider = getConfig('provider')
+		await setConfig('provider', 'openai-compatible')
+		chatStub.resolves({
+			text: '',
+			chunks: [
+				{
+					type: 'REASONING_MESSAGE_CONTENT',
+					delta: '{"type":"fix","message":"Fix null check"}',
+				},
+			],
+		})
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+			assert.strictEqual(result.type, 'fix')
+			assert.strictEqual(result.message, 'Fix null check')
+		} finally {
+			await setConfig('provider', originalProvider ?? 'ollama')
+		}
+	})
+
+	test('Should retry invalid JSON text for OpenAI-compatible provider', async () => {
+		const originalProvider = getConfig('provider')
+		await setConfig('provider', 'openai-compatible')
+		chatStub.onFirstCall().resolves({
+			text: 'I would use a feat commit.',
+			chunks: [],
+		})
+		chatStub.onSecondCall().resolves({
+			text: '{"type":"feat","message":"Add new feature"}',
+			chunks: [],
+		})
+
+		try {
+			const result = await generateStructuredCommit(summariesSample)
+
+			assert.strictEqual(result.type, 'feat')
+			assert.strictEqual(chatStub.callCount, 2)
+			assert.ok(
+				chatStub.secondCall.args[0].systemPrompts[0].includes(
+					'previous response was invalid',
+				),
+			)
+		} finally {
+			await setConfig('provider', originalProvider ?? 'ollama')
+		}
+	})
 })
 
 suite('branch context helpers', () => {
@@ -167,6 +257,50 @@ suite('branch context helpers', () => {
 		assert.ok(content.includes('fix/42-thing'))
 		assert.ok(content.includes('<untrusted_summaries>'))
 		assert.ok(content.includes('- a.ts: Added a'))
+	})
+
+	test('buildCommitDiffUserContent wraps the staged diff', () => {
+		const content = buildCommitDiffUserContent(
+			'@@ -1 +1 @@\n+hello',
+			'feat/x',
+		)
+
+		assert.ok(content.includes('<untrusted_branch>'))
+		assert.ok(content.includes('feat/x'))
+		assert.ok(content.includes('<untrusted_diff>'))
+		assert.ok(content.includes('+hello'))
+		assert.ok(content.includes('Staged git diff:'))
+	})
+})
+
+suite('getCommitMessageFromDiff Tests', () => {
+	let chatStub: sinon.SinonStub
+
+	setup(() => {
+		chatStub = sinon.stub(ai.llm, 'chat').resolves({
+			type: 'fix',
+			message: 'Fix null check',
+		})
+	})
+
+	teardown(() => {
+		sinon.restore()
+	})
+
+	test('Should generate a commit from a staged diff in one call', async () => {
+		const result = await getCommitMessageFromDiff(
+			'@@ -1 +1 @@\n+return value',
+			'main',
+		)
+
+		assert.ok(result.includes('Fix null check'))
+		assert.strictEqual(chatStub.callCount, 1)
+		const userContent = chatStub.firstCall.args[0].messages[0].content as string
+		assert.ok(userContent.includes('<untrusted_diff>'))
+		assert.ok(userContent.includes('+return value'))
+		assert.ok(
+			chatStub.firstCall.args[0].systemPrompts[0].includes('staged git diff'),
+		)
 	})
 })
 

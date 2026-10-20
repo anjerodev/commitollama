@@ -9,9 +9,11 @@ export function warnUntrustedConfigOnce(setting: 'endpoint' | 'headers'): void {
 	warnedSettings.add(setting)
 
 	const label =
-		setting === 'endpoint' ? 'custom Ollama endpoint' : 'custom request headers'
+		setting === 'endpoint'
+			? 'custom inference endpoint'
+			: 'custom request headers'
 
 	vscode.window.showWarningMessage(
-		`Commitollama: ${label} is ignored in untrusted workspaces. Trust this workspace to use custom Ollama settings.`,
+		`Commitollama: ${label} is ignored in untrusted workspaces. Trust this workspace to use custom inference settings.`,
 	)
 }

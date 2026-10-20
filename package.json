@@ -63,11 +63,37 @@
 				"type": "object",
 				"title": "Commitollama",
 				"properties": {
+					"commitollama.provider": {
+						"type": "string",
+						"enum": [
+							"ollama",
+							"openai-compatible"
+						],
+						"description": "Inference provider. Use ollama for Ollama, or openai-compatible for LM Studio and other OpenAI-compatible local servers.",
+						"default": "ollama",
+						"order": 0
+					},
 					"commitollama.model": {
 						"type": "string",
-						"description": "Ollama model for generating commit messages (e.g. llama3.2:latest). Set automatically on first use.",
+						"description": "Model id for generating commit messages (e.g. llama3.2:latest or an LM Studio model id). Set automatically on first use.",
 						"default": "llama3.2:latest",
-						"order": 0
+						"order": 1
+					},
+					"commitollama.promptStrategy": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"diff",
+							"summaries"
+						],
+						"enumDescriptions": [
+							"Use the staged diff directly when it is small; otherwise summarize files first.",
+							"Always send the staged diff to the model in one call.",
+							"Always summarize each staged file, then generate the commit from summaries."
+						],
+						"description": "How Commitollama builds the model prompt. auto prefers a fast single diff call for small stages.",
+						"default": "auto",
+						"order": 2
 					},
 					"commitollama.useEmojis": {
 						"type": "boolean",
@@ -133,7 +159,7 @@
 					},
 					"commitollama.custom.endpoint": {
 						"type": "string",
-						"description": "Ollama Server Endpoint. Leave empty to use the default ollama endpoint.",
+						"description": "Inference server URL. Leave empty to use the provider default (Ollama: http://127.0.0.1:11434, OpenAI-compatible: http://127.0.0.1:1234/v1).",
 						"order": 10
 					},
 					"commitollama.custom.prompt": {
@@ -158,7 +184,7 @@
 					},
 					"commitollama.custom.requestHeaders": {
 						"type": "object",
-						"description": "Custom request headers to send with the Ollama request. Useful for authentication or custom headers.",
+						"description": "Custom request headers to send with inference requests. Useful for authentication or custom headers.",
 						"order": 15
 					},
 					"commitollama.background.enabled": {
@@ -201,10 +227,11 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.15",
-		"@tanstack/ai": "0.65.1",
-		"@tanstack/ai-ollama": "0.11.13",
+		"@tanstack/ai": "0.70.0",
+		"@tanstack/ai-ollama": "0.12.1",
+		"@tanstack/ai-openai": "0.30.1",
 		"@types/mocha": "10.0.10",
-		"@types/node": "26.6.4",
+		"@types/node": "26.6.5",
 		"@types/sinon": "22.0.0",
 		"@types/vscode": "1.140.0",
 		"@vscode/test-cli": "0.0.15",
@@ -216,7 +243,7 @@
 		"serialize-javascript": "7.1.2",
 		"sinon": "22.1.0",
 		"typescript": "7.0.2",
-		"zod": "4.6.5"
+		"zod": "4.6.7"
 	},
 	"extensionDependencies": [
 		"vscode.git"

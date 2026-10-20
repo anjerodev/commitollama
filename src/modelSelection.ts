@@ -5,7 +5,7 @@ import {
 	isRecommendedModel,
 	OLLAMA_LIBRARY_URL,
 } from './constants'
-import { listOllamaModels } from './ollamaAdapter'
+import { formatProviderLabel, listModels } from './providers'
 
 function isSettingConfigured(key: string): boolean {
 	const inspected = vscode.workspace
@@ -94,21 +94,28 @@ function sortModels(models: string[]): string[] {
 }
 
 async function listAvailableModels(): Promise<string[] | null> {
+	const { provider } = config.inference
 	try {
-		return sortModels(await listOllamaModels())
+		return sortModels(await listModels())
 	} catch (error) {
 		const message =
 			error instanceof Error
 				? error.message
-				: 'Unable to connect to Ollama. Please check that Ollama is running.'
+				: `Unable to connect to ${formatProviderLabel(provider)}. Please check that the server is running.`
 		await vscode.window.showErrorMessage(message)
 		return null
 	}
 }
 
 async function showNoModelsMessage(): Promise<void> {
+	const { provider } = config.inference
+	if (provider === 'openai-compatible') {
+		await vscode.window.showErrorMessage(formatNoModelsMessage(provider))
+		return
+	}
+
 	const action = await vscode.window.showErrorMessage(
-		formatNoModelsMessage(),
+		formatNoModelsMessage(provider),
 		'Open Ollama Library',
 	)
 	if (action === 'Open Ollama Library') {
@@ -116,10 +123,11 @@ async function showNoModelsMessage(): Promise<void> {
 	}
 }
 
-async function pickOllamaModel(options?: {
+async function pickModel(options?: {
 	currentModel?: string
 	title?: string
 }): Promise<string | null> {
+	const { provider } = config.inference
 	const models = await listAvailableModels()
 	if (!models) {
 		return null
@@ -131,10 +139,12 @@ async function pickOllamaModel(options?: {
 	}
 
 	const currentModel = options?.currentModel
+	const providerLabel = formatProviderLabel(provider)
 	const selected = await vscode.window.showQuickPick(
 		models.map((model) => {
 			const isCurrent = model === currentModel
-			const recommended = isRecommendedModel(model)
+			const recommended =
+				provider === 'ollama' ? isRecommendedModel(model) : false
 			return {
 				label: recommended ? `$(star) ${model}` : model,
 				description: isCurrent
@@ -147,8 +157,12 @@ async function pickOllamaModel(options?: {
 			}
 		}),
 		{
-			title: options?.title ?? 'Select an Ollama model for Commitollama',
-			placeHolder: 'Choose a model you have already pulled',
+			title:
+				options?.title ?? `Select a ${providerLabel} model for Commitollama`,
+			placeHolder:
+				provider === 'openai-compatible'
+					? 'Choose a model loaded on your server'
+					: 'Choose a model you have already pulled',
 		},
 	)
 
@@ -160,7 +174,7 @@ export async function ensureModelSelected(): Promise<boolean> {
 		return true
 	}
 
-	const model = await pickOllamaModel()
+	const model = await pickModel()
 	if (!model) {
 		return false
 	}
@@ -176,7 +190,7 @@ export async function ensureModelSelected(): Promise<boolean> {
 
 export async function switchModel(): Promise<void> {
 	const currentModel = config.inference.model
-	const model = await pickOllamaModel({
+	const model = await pickModel({
 		currentModel,
 		title: 'Switch Commitollama model',
 	})

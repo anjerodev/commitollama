@@ -1,8 +1,15 @@
 import {
 	DEFAULT_MODEL,
 	DEFAULT_OLLAMA_ENDPOINT,
+	DEFAULT_PROMPT_STRATEGY,
+	DEFAULT_PROVIDER,
 	LEGACY_MODEL_SETTINGS,
 } from './constants'
+import {
+	isPromptStrategy,
+	type PromptStrategy,
+} from './promptStrategy'
+import { isProviderId, type ProviderId } from './providers/types'
 import { resolveEndpoint } from './security/endpoint'
 import { resolveRequestHeaders } from './security/headers'
 import { type EmojisMap, type Language, Languages } from './types/llm'
@@ -10,6 +17,8 @@ import { getConfig } from './utils'
 
 export const defaultConfig = {
 	endpoint: DEFAULT_OLLAMA_ENDPOINT,
+	provider: DEFAULT_PROVIDER,
+	promptStrategy: DEFAULT_PROMPT_STRATEGY,
 	model: DEFAULT_MODEL,
 	useEmojis: false,
 	useDescription: false,
@@ -44,9 +53,27 @@ function resolveModel(): string {
 	return LEGACY_MODEL_SETTINGS[configured] ?? configured
 }
 
+function resolveProvider(): ProviderId {
+	const configured = getConfig('provider')
+	if (isProviderId(configured)) {
+		return configured
+	}
+	return defaultConfig.provider
+}
+
+function resolvePromptStrategy(): PromptStrategy {
+	const configured = getConfig('promptStrategy')
+	if (isPromptStrategy(configured)) {
+		return configured
+	}
+	return defaultConfig.promptStrategy
+}
+
 class Config {
 	get inference() {
 		const model = resolveModel()
+		const provider = resolveProvider()
+		const promptStrategy = resolvePromptStrategy()
 
 		const useEmojis = getConfig('useEmojis') || defaultConfig.useEmojis
 		const customEmojis = getConfig('custom.emojis')
@@ -71,7 +98,7 @@ class Config {
 			language = getConfig('custom.language') || defaultConfig.language
 		}
 
-		const endpoint = resolveEndpoint(getConfig('custom.endpoint'))
+		const endpoint = resolveEndpoint(getConfig('custom.endpoint'), provider)
 		const requestHeaders = resolveRequestHeaders(
 			getConfig('custom.requestHeaders'),
 		)
@@ -103,6 +130,8 @@ class Config {
 			endpoint,
 			language,
 			model,
+			provider,
+			promptStrategy,
 			useDescription,
 			useEmojis,
 			useLowerCase,

@@ -1,11 +1,12 @@
 import * as ai from './ai'
 import { config } from './config'
-import { createSummarizeAdapter } from './ollamaAdapter'
+import { createSummarizeAdapter } from './providers'
+import { buildOpenAICompatibleModelOptions } from './providers/openaiCompatibleOptions'
 import { formatExtensionError, logExtensionError } from './security/log'
 import { wrapUntrustedContent } from './security/prompt'
 
 export async function summarizeFileDiff(diff: string): Promise<string> {
-	const { promptTemperature, model } = config.inference
+	const { promptTemperature, model, provider } = config.inference
 
 	const wrappedDiff = wrapUntrustedContent('diff', diff)
 
@@ -21,11 +22,16 @@ export async function summarizeFileDiff(diff: string): Promise<string> {
 				'Do not say there are no changes, an empty diff, or missing input',
 				'Do not start with "The code changes..." or "This file..."',
 			],
-			modelOptions: {
-				options: {
-					temperature: promptTemperature,
-				},
-			},
+			modelOptions:
+				provider === 'openai-compatible'
+					? buildOpenAICompatibleModelOptions({
+							temperature: promptTemperature,
+						})
+					: {
+							options: {
+								temperature: promptTemperature,
+							},
+						},
 		})
 
 		return result.summary.trim()
