@@ -1,3 +1,4 @@
+import * as vscode from 'vscode'
 import {
 	DEFAULT_MODEL,
 	DEFAULT_OLLAMA_ENDPOINT,
@@ -12,6 +13,8 @@ import {
 import { isProviderId, type ProviderId } from './providers/types'
 import { resolveEndpoint } from './security/endpoint'
 import { resolveRequestHeaders } from './security/headers'
+import { selectScopedText } from './security/prompt'
+import { warnUntrustedConfigOnce } from './security/warnUntrusted'
 import { type EmojisMap, type Language, Languages } from './types/llm'
 import { getConfig } from './utils'
 
@@ -61,6 +64,33 @@ function resolveProvider(): ProviderId {
 	return defaultConfig.provider
 }
 
+const PROMPT_OVERRIDE_KEYS = [
+	'custom.prompt',
+	'custom.typeRules',
+	'custom.commitMessageRules',
+	'custom.descriptionPrompt',
+] as const
+
+function resolvePromptOverride(
+	key: (typeof PROMPT_OVERRIDE_KEYS)[number],
+): string | undefined {
+	const inspected = vscode.workspace
+		.getConfiguration('commitollama')
+		.inspect<string>(key)
+	const selected = selectScopedText({
+		trusted: vscode.workspace.isTrusted,
+		workspaceValue: inspected?.workspaceValue,
+		folderValue: inspected?.workspaceFolderValue,
+		globalValue: inspected?.globalValue,
+	})
+
+	if (selected.ignoredWorkspaceValue) {
+		warnUntrustedConfigOnce('prompt')
+	}
+
+	return selected.value
+}
+
 function resolvePromptStrategy(): PromptStrategy {
 	const configured = getConfig('promptStrategy')
 	if (isPromptStrategy(configured)) {
@@ -98,18 +128,20 @@ class Config {
 			language = getConfig('custom.language') || defaultConfig.language
 		}
 
-		const endpoint = resolveEndpoint(getConfig('custom.endpoint'), provider)
-		const requestHeaders = resolveRequestHeaders(
-			getConfig('custom.requestHeaders'),
-		)
+		const resolvedEndpoint = resolveEndpoint(provider)
+		const requestHeaders = resolveRequestHeaders(resolvedEndpoint.source)
 
 		const promptTemperature =
 			getConfig('promptTemperature') || defaultConfig.promptTemperature
 
-		const customPrompt = getConfig('custom.prompt')
-		const customTypeRules = getConfig('custom.typeRules')
-		const customCommitMessageRules = getConfig('custom.commitMessageRules')
-		const customDescriptionPrompt = getConfig('custom.descriptionPrompt')
+		const customPrompt = resolvePromptOverride('custom.prompt')
+		const customTypeRules = resolvePromptOverride('custom.typeRules')
+		const customCommitMessageRules = resolvePromptOverride(
+			'custom.commitMessageRules',
+		)
+		const customDescriptionPrompt = resolvePromptOverride(
+			'custom.descriptionPrompt',
+		)
 
 		const background = {
 			enabled:
@@ -127,7 +159,7 @@ class Config {
 			customDescriptionPrompt,
 			customPrompt,
 			customTypeRules,
-			endpoint,
+			endpoint: resolvedEndpoint.endpoint,
 			language,
 			model,
 			provider,
