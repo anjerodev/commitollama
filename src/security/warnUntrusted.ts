@@ -10,11 +10,15 @@ function warnOnce(key: string, message: string): void {
 	vscode.window.showWarningMessage(message)
 }
 
-export function warnUntrustedConfigOnce(setting: 'endpoint' | 'headers'): void {
+export function warnUntrustedConfigOnce(
+	setting: 'endpoint' | 'headers' | 'prompt',
+): void {
 	const label =
 		setting === 'endpoint'
 			? 'custom inference endpoint'
-			: 'custom request headers'
+			: setting === 'headers'
+				? 'custom request headers'
+				: 'custom prompt text'
 
 	warnOnce(
 		`untrusted:${setting}`,
