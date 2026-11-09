@@ -9,5 +9,5 @@ minimumReleaseAgeExclude:
   - '@tanstack/ai@0.70.0'
   - '@tanstack/openai-base@0.15.0'
 overrides:
-  serialize-javascript: 7.1.2
+  serialize-javascript: 7.1.4
   diff: 9.0.0
