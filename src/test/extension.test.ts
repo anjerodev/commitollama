@@ -98,6 +98,41 @@ suite('generateStructuredCommit Tests', () => {
 		)
 	})
 
+	test('Should retry Ollama with JSON-only output when structured output is unsupported', async () => {
+		chatStub.onFirstCall().rejects({
+			status_code: 400,
+			error: 'model does not support structured outputs',
+		})
+		chatStub.onSecondCall().resolves({
+			text: '```json\n{"type":"fix","message":"Fix null check"}\n```',
+			chunks: [],
+		})
+
+		const result = await generateStructuredCommit(summariesSample)
+
+		assert.strictEqual(result.type, 'fix')
+		assert.strictEqual(result.message, 'Fix null check')
+		assert.strictEqual(chatStub.callCount, 2)
+
+		const retry = chatStub.secondCall.args[0]
+		assert.strictEqual(retry.outputSchema, undefined)
+		assert.strictEqual(retry.stream, false)
+		assert.strictEqual(retry.modelOptions.options.num_predict, 2048)
+		assert.strictEqual(retry.modelOptions.max_tokens, undefined)
+		assert.ok(retry.systemPrompts[0].includes('JSON Schema'))
+		assert.ok(retry.systemPrompts[0].includes('"refactor"'))
+	})
+
+	test('Should not retry unrelated Ollama errors', async () => {
+		chatStub.rejects(new Error('connect ECONNREFUSED 127.0.0.1:11434'))
+
+		await assert.rejects(
+			() => generateStructuredCommit(summariesSample),
+			/ECONNREFUSED/,
+		)
+		assert.strictEqual(chatStub.callCount, 1)
+	})
+
 	test('Should retry when model returns a generic commit message', async () => {
 		chatStub.onFirstCall().resolves({
 			type: 'chore',
@@ -165,7 +200,10 @@ suite('generateStructuredCommit Tests', () => {
 			assert.strictEqual(chatStub.firstCall.args[0].stream, false)
 			assert.strictEqual(chatStub.firstCall.args[0].reasoning, false)
 			assert.strictEqual(chatStub.firstCall.args[0].outputSchema, undefined)
-			assert.strictEqual(chatStub.firstCall.args[0].modelOptions.max_tokens, 2048)
+			assert.strictEqual(
+				chatStub.firstCall.args[0].modelOptions.max_tokens,
+				2048,
+			)
 			assert.strictEqual(
 				chatStub.firstCall.args[0].modelOptions.response_format,
 				undefined,
@@ -260,10 +298,7 @@ suite('branch context helpers', () => {
 	})
 
 	test('buildCommitDiffUserContent wraps the staged diff', () => {
-		const content = buildCommitDiffUserContent(
-			'@@ -1 +1 @@\n+hello',
-			'feat/x',
-		)
+		const content = buildCommitDiffUserContent('@@ -1 +1 @@\n+hello', 'feat/x')
 
 		assert.ok(content.includes('<untrusted_branch>'))
 		assert.ok(content.includes('feat/x'))
@@ -349,10 +384,7 @@ suite('getCommitMessage Tests', () => {
 	})
 
 	test('Should pass branch name through to the model request', async () => {
-		const result = await getCommitMessage(
-			summariesSample,
-			'bugfix/ISSUE-9',
-		)
+		const result = await getCommitMessage(summariesSample, 'bugfix/ISSUE-9')
 
 		assert.strictEqual(result, 'feat: Add new feature')
 		const userContent = chatStub.firstCall.args[0].messages[0].content as string

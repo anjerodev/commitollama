@@ -48,6 +48,16 @@ export function buildCommitSchema(useDescription: boolean, language: string) {
 	return base
 }
 
+export function buildCommitJsonSchema(
+	useDescription: boolean,
+	language: string,
+) {
+	const { $schema: _, ...schema } = z.toJSONSchema(
+		buildCommitSchema(useDescription, language),
+	)
+	return schema
+}
+
 export function parseCommitResponse(
 	data: unknown,
 	useDescription: boolean,

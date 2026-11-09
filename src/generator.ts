@@ -8,6 +8,7 @@ import { truncateDiffForPrompt } from './promptStrategy'
 import { createChatAdapter } from './providers'
 import { buildOpenAICompatibleModelOptions } from './providers/openaiCompatibleOptions'
 import {
+	buildCommitJsonSchema,
 	buildCommitSchema,
 	type CommitStructure,
 	parseCommitResponse,
@@ -16,6 +17,11 @@ import { extractJsonObject } from './schemas/jsonExtract'
 import { formatExtensionError, logExtensionError } from './security/log'
 import { wrapUntrustedContent } from './security/prompt'
 import type { EmojisMap } from './types/llm'
+
+// Reasoning models can spend most of a small budget thinking, so the
+// free-form JSON path gets more room than schema-constrained output.
+const STRUCTURED_MAX_TOKENS = 256
+const JSON_ONLY_MAX_TOKENS = 2048
 
 export type ChangeSummary = {
 	file: string
@@ -67,7 +73,16 @@ function isJsonResponseValidationError(error: unknown): boolean {
 	return (
 		error instanceof ZodError ||
 		(error instanceof Error &&
-			error.message.includes('Could not find a JSON object in the model response'))
+			error.message.includes(
+				'Could not find a JSON object in the model response',
+			))
+	)
+}
+
+function isRecoverableResponseError(error: unknown): boolean {
+	return (
+		isJsonResponseValidationError(error) ||
+		isStructuredOutputCompatibilityError(error)
 	)
 }
 
@@ -165,10 +180,7 @@ export function buildCommitDiffUserContent(
 	diff: string,
 	branchName?: string | null,
 ): string {
-	const wrappedDiff = wrapUntrustedContent(
-		'diff',
-		truncateDiffForPrompt(diff),
-	)
+	const wrappedDiff = wrapUntrustedContent('diff', truncateDiffForPrompt(diff))
 
 	return `${buildBranchSection(branchName)}Staged git diff:\n${wrappedDiff}`
 }
@@ -232,7 +244,7 @@ function buildStructuredPrompt(options: {
 	Respond using JSON`
 
 	const jsonOnlyInstruction = jsonOnly
-		? `Respond with exactly one valid JSON object and nothing else. Do not use Markdown, code fences, or explanatory text. Required fields: ${useDescription ? '{"type":"feat","message":"Brief commit subject","summary":"One to three sentence commit description"}' : '{"type":"feat","message":"Brief commit subject"}'}. The type value must be one of: feat, fix, docs, style, test, chore, revert, refactor.`
+		? `Respond with exactly one valid JSON object and nothing else. Do not use Markdown, code fences, or explanatory text. The object must match this JSON Schema:\n${JSON.stringify(buildCommitJsonSchema(useDescription, language))}`
 		: undefined
 
 	const instructions = [extraInstruction, jsonOnlyInstruction].filter(Boolean)
@@ -242,6 +254,17 @@ function buildStructuredPrompt(options: {
 	}
 
 	return `${basePrompt}\n\n${instructions.join('\n\n')}`
+}
+
+function buildModelOptions(maxTokens: number): Record<string, unknown> {
+	const { provider, promptTemperature } = config.inference
+	if (provider === 'openai-compatible') {
+		return buildOpenAICompatibleModelOptions({
+			temperature: promptTemperature,
+			maxTokens,
+		})
+	}
+	return { options: { temperature: promptTemperature, num_predict: maxTokens } }
 }
 
 async function requestStructuredCommit(
@@ -254,7 +277,6 @@ async function requestStructuredCommit(
 ): Promise<CommitStructure> {
 	const {
 		provider,
-		promptTemperature,
 		language,
 		useDescription,
 		customPrompt,
@@ -262,8 +284,7 @@ async function requestStructuredCommit(
 		customCommitMessageRules,
 		customDescriptionPrompt,
 	} = config.inference
-	const jsonOnly =
-		options?.jsonOnly ?? provider === 'openai-compatible'
+	const jsonOnly = options?.jsonOnly ?? provider === 'openai-compatible'
 
 	const typeRules =
 		customTypeRules ||
@@ -318,10 +339,7 @@ async function requestStructuredCommit(
 			...chatBase,
 			stream: false,
 			reasoning: false,
-			modelOptions: buildOpenAICompatibleModelOptions({
-				temperature: promptTemperature,
-				maxTokens: 2048,
-			}),
+			modelOptions: buildModelOptions(JSON_ONLY_MAX_TOKENS),
 		})
 		return parseJsonCommitResponse(
 			getChatResultText(result),
@@ -335,12 +353,7 @@ async function requestStructuredCommit(
 		...chatBase,
 		outputSchema,
 		reasoning: false,
-		modelOptions: {
-			options: {
-				temperature: promptTemperature,
-				num_predict: 256,
-			},
-		},
+		modelOptions: buildModelOptions(STRUCTURED_MAX_TOKENS),
 	})
 
 	return parseCommitResponse(result, useDescription, language)
@@ -364,7 +377,7 @@ async function generateStructuredCommitFromSource(
 				jsonOnly,
 			})
 		} catch (error) {
-			if (!jsonOnly || !isJsonResponseValidationError(error)) {
+			if (!isRecoverableResponseError(error)) {
 				throw error
 			}
 
@@ -477,10 +490,7 @@ export async function getCommitMessage(
 	summaries: ChangeSummary[],
 	branchName?: string | null,
 ) {
-	const structuredCommit = await generateStructuredCommit(
-		summaries,
-		branchName,
-	)
+	const structuredCommit = await generateStructuredCommit(summaries, branchName)
 	return formatCommitMessage(structuredCommit)
 }
 

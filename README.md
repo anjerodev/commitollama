@@ -90,6 +90,19 @@ You can also set `commitollama.model` manually in VS Code settings.
 3. Run **Commitollama: Switch Model** and pick a model from the server.
 4. Use a non-thinking model (for example Qwen2.5-Coder 3B Instruct) and disable Reasoning/Thinking in LM Studio if available.
 
+### Ollama Cloud
+
+Point the endpoint at Ollama Cloud and send your API key as a header:
+
+```json
+{
+  "commitollama.custom.endpoint": "https://ollama.com",
+  "commitollama.custom.requestHeaders": { "Authorization": "Bearer <api-key>" }
+}
+```
+
+If a model cannot produce structured output, Commitollama retries once asking for plain JSON.
+
 Example emoji map:
 
 ```json
