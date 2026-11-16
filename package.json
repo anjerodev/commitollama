@@ -226,7 +226,7 @@
 		"package": "pnpm exec vsce package --no-dependencies"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.6",
+		"@biomejs/biome": "2.6.7",
 		"@tanstack/ai": "1.2.0",
 		"@tanstack/ai-ollama": "1.1.0",
 		"@tanstack/ai-openai": "1.1.1",
