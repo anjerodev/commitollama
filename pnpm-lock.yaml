@@ -16,14 +16,14 @@ importers:
         specifier: 2.6.6
         version: 2.6.6
       '@tanstack/ai':
-        specifier: 1.2.0
-        version: 1.2.0(zod@4.6.7)
+        specifier: 1.4.0
+        version: 1.4.0(zod@4.6.7)
       '@tanstack/ai-ollama':
         specifier: 1.1.0
-        version: 1.1.0(@tanstack/ai@1.2.0(zod@4.6.7))
+        version: 1.1.0(@tanstack/ai@1.4.0(zod@4.6.7))
       '@tanstack/ai-openai':
         specifier: 1.1.1
-        version: 1.1.1(@tanstack/ai@1.2.0(zod@4.6.7))(zod@4.6.7)
+        version: 1.1.1(@tanstack/ai@1.4.0(zod@4.6.7))(zod@4.6.7)
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
@@ -474,6 +474,7 @@ packages:
   '@secretlint/secretlint-rule-preset-recommend@10.2.2':
     resolution: {integrity: sha512-K3jPqjva8bQndDKJqctnGfwuAxU2n9XNCPtbXVI5JvC7FnQiNg/yWlQPbMUlBXtBoBGFYp08A94m6fvtc9v+zA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Built into secretlint v14 and later. Remove this package; the rule id still works. https://github.com/secretlint/secretlint/blob/HEAD/docs/rules/preset-recommend.md
 
   '@secretlint/source-creator@10.2.2':
     resolution: {integrity: sha512-h6I87xJfwfUTgQ7irWq7UTdq/Bm1RuQ/fYhA3dtTIAop5BwSFmZyrchph4WcoEvbN460BWKmk4RYSvPElIIvxw==}
@@ -511,8 +512,8 @@ packages:
   '@tanstack/ai-utils@1.1.0':
     resolution: {integrity: sha512-li47v/794azVLourgteS/+jjH/ZF+cIp/3RMVA1VybtKAFiMy3ZGxREU10OzfUghMzYLdfpK2l6ahvlWxNVHug==}
 
-  '@tanstack/ai@1.2.0':
-    resolution: {integrity: sha512-N4v2HfkJgwNxkVNcYHVbjuJM4jJhb/y6ifNhUIqoGw6oa/nZjuTnGSCer9ldr9DIMQVrAizc8ocM3FBmszItSw==}
+  '@tanstack/ai@1.4.0':
+    resolution: {integrity: sha512-3f0D9gFCk8LUe9qAPCsRkjlXU2bqbIKKMGGo9P6Q6O0vR+5/0N/J3x1J2QWYY8L3LNvJliZBDnutudEIRzNU8w==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': '>=1.9.0'
@@ -1999,17 +2000,17 @@ snapshots:
     dependencies:
       '@tanstack/devtools-event-client': 0.4.4
 
-  '@tanstack/ai-ollama@1.1.0(@tanstack/ai@1.2.0(zod@4.6.7))':
+  '@tanstack/ai-ollama@1.1.0(@tanstack/ai@1.4.0(zod@4.6.7))':
     dependencies:
-      '@tanstack/ai': 1.2.0(zod@4.6.7)
+      '@tanstack/ai': 1.4.0(zod@4.6.7)
       '@tanstack/ai-utils': 1.1.0
       ollama: 0.6.4
 
-  '@tanstack/ai-openai@1.1.1(@tanstack/ai@1.2.0(zod@4.6.7))(zod@4.6.7)':
+  '@tanstack/ai-openai@1.1.1(@tanstack/ai@1.4.0(zod@4.6.7))(zod@4.6.7)':
     dependencies:
-      '@tanstack/ai': 1.2.0(zod@4.6.7)
+      '@tanstack/ai': 1.4.0(zod@4.6.7)
       '@tanstack/ai-utils': 1.1.0
-      '@tanstack/openai-base': 1.0.2(@tanstack/ai@1.2.0(zod@4.6.7))(zod@4.6.7)
+      '@tanstack/openai-base': 1.0.2(@tanstack/ai@1.4.0(zod@4.6.7))(zod@4.6.7)
       openai: 7.53.0(zod@4.6.7)
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -2022,7 +2023,7 @@ snapshots:
 
   '@tanstack/ai-utils@1.1.0': {}
 
-  '@tanstack/ai@1.2.0(zod@4.6.7)':
+  '@tanstack/ai@1.4.0(zod@4.6.7)':
     dependencies:
       '@ag-ui/core': 1.0.0(zod@4.6.7)
       '@cfworker/json-schema': 4.1.6
@@ -2036,9 +2037,9 @@ snapshots:
 
   '@tanstack/devtools-event-client@0.4.4': {}
 
-  '@tanstack/openai-base@1.0.2(@tanstack/ai@1.2.0(zod@4.6.7))(zod@4.6.7)':
+  '@tanstack/openai-base@1.0.2(@tanstack/ai@1.4.0(zod@4.6.7))(zod@4.6.7)':
     dependencies:
-      '@tanstack/ai': 1.2.0(zod@4.6.7)
+      '@tanstack/ai': 1.4.0(zod@4.6.7)
       '@tanstack/ai-utils': 1.1.0
       openai: 7.53.0(zod@4.6.7)
     transitivePeerDependencies:
